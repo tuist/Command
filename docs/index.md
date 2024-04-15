@@ -13,10 +13,10 @@ hero:
 
 features:
   - title: Linux-compatible
-    details: All the components have been tested on Linux environments.
-  - title: Themable
-    details: You can customize the appearance of the components by passing a theme object.
-  - title: Extensible
-    details: We provide the foundations needed to build your own components.
+    details: Process is compatible with Linux and macOS and we have a suite of tests that run on both platforms.
+  - title: Async/await compatible
+    details: The API is aligned with Swift's long-term plan for concurrency.
+  - title: Maintain by Tuist
+    details: Process underpins Tuist's core functionality and is maintained by the Tuist community.
 ---
 
