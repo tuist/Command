@@ -11,7 +11,7 @@ let package = Package(
             name: "Process",
             type: .static,
             targets: ["Process"]
-        )
+        ),
     ],
     dependencies: [
     ],
