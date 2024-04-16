@@ -1,4 +1,4 @@
-name: Process
+name: Command
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   pull_request: {}
 
 concurrency:
-  group: process-${{ github.head_ref }}
+  group: command-${{ github.head_ref }}
   cancel-in-progress: true
 
 jobs:

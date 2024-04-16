@@ -1,3 +1,3 @@
 import ProjectDescription
 
-let config = Config(cloud: .cloud(projectId: "tuist/process"))
+let config = Config(cloud: .cloud(projectId: "tuist/command"))

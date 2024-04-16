@@ -1,5 +1,5 @@
 import XCTest
-@testable import Process
+@testable import Command
 
 final class TerminalSizeTests: XCTestCase {
     func test_current_doesnt_return_nil() {

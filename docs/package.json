@@ -1,5 +1,5 @@
 {
-  "name": "@tuist/process-docs",
+  "name": "@tuist/command-docs",
   "private": true,
   "devDependencies": {
     "vitepress": "^1.1.0",
@@ -9,6 +9,6 @@
     "dev": "vitepress dev .",
     "build": "vitepress build .",
     "preview": "vitepress preview .",
-    "deploy": "vitepress build && wrangler pages deploy .vitepress/dist --project-name tuist-process --branch main"
+    "deploy": "vitepress build && wrangler pages deploy .vitepress/dist --project-name tuist-command --branch main"
   }
 }

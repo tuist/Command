@@ -2,4 +2,4 @@
 # mise description="Test the project using Tuist"
 set -euo pipefail
 
-tuist test Process --path $MISE_PROJECT_ROOT
+tuist test Command --path $MISE_PROJECT_ROOT

@@ -1,14 +1,14 @@
 import ProjectDescription
 
-let project = Project(name: "Process", targets: [
+let project = Project(name: "Command", targets: [
     .target(
-        name: "Process",
+        name: "Command",
         destinations: .macOS,
         product: .staticFramework,
-        bundleId: "io.tuist.Process",
+        bundleId: "io.tuist.Command",
         deploymentTargets: .macOS("12.0"),
         sources: [
-            "Sources/Process/**/*.swift",
+            "Sources/Command/**/*.swift",
         ],
         dependencies: [
             // .external(name: "Rainbow", condition: nil),
@@ -19,16 +19,16 @@ let project = Project(name: "Process", targets: [
         ])
     ),
     .target(
-        name: "ProcessTests",
+        name: "CommandTests",
         destinations: .macOS,
         product: .unitTests,
-        bundleId: "io.tuist.ProcessTests",
+        bundleId: "io.tuist.CommandTests",
         deploymentTargets: .macOS("12.0"),
         sources: [
-            "Tests/ProcessTests/**/*.swift",
+            "Tests/CommandTests/**/*.swift",
         ],
         dependencies: [
-            .target(name: "Process"),
+            .target(name: "Command"),
         ]
     ),
 ])

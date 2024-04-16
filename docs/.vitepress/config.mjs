@@ -2,10 +2,10 @@ import { defineConfig } from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: "Process",
+  title: "Command",
   description: "A micro Swift Package for running system processes in Swift",
   sitemap: {
-    hostname: 'https://process.tuist.io'
+    hostname: 'https://command.tuist.io'
   },
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
@@ -23,7 +23,7 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/tuist/process' }
+      { icon: 'github', link: 'https://github.com/tuist/Command' }
     ]
   }
 })

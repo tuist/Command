@@ -4,20 +4,20 @@
 import PackageDescription
 
 let package = Package(
-    name: "Process",
+    name: "Command",
     platforms: [.macOS("12.0")],
     products: [
         .library(
-            name: "Process",
+            name: "Command",
             type: .static,
-            targets: ["Process"]
+            targets: ["Command"]
         ),
     ],
     dependencies: [
     ],
     targets: [
         .target(
-            name: "Process",
+            name: "Command",
             dependencies: [
             ],
             swiftSettings: [
@@ -25,9 +25,9 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "ProcessTests",
+            name: "CommandTests",
             dependencies: [
-                "Process",
+                "Command",
             ]
         ),
     ]

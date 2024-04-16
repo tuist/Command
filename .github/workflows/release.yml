@@ -49,7 +49,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           owner: "tuist"
-          repo: "Process"
+          repo: "Command"
           configuration: ".github/changelog-configuration.json"
           toTag: "main"
       - name: Commit
@@ -58,12 +58,12 @@ jobs:
         with:
           commit_options: '--allow-empty'
           skip_dirty_check: true
-          commit_message: "[Release] Process ${{ steps.semvers.outputs.version }}"
+          commit_message: "[Release] Command ${{ steps.semvers.outputs.version }}"
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           draft: false
-          repository: tuist/Process
+          repository: tuist/Command
           name: ${{ steps.semvers.outputs.version }}
           tag_name: ${{ steps.semvers.outputs.version }}
           body: ${{ steps.changelog.outputs.changelog }}
