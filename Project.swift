@@ -6,12 +6,13 @@ let project = Project(name: "Command", targets: [
         destinations: .macOS,
         product: .staticFramework,
         bundleId: "io.tuist.Command",
-        deploymentTargets: .macOS("12.0"),
+        deploymentTargets: .macOS("14.0"),
         sources: [
             "Sources/Command/**/*.swift",
         ],
         dependencies: [
-            // .external(name: "Rainbow", condition: nil),
+            .external(name: "TSCBasic"),
+            .external(name: "Path"),
         ],
         settings: .settings(configurations: [
             .debug(name: .debug, settings: ["SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) MOCKING"]),
@@ -23,7 +24,7 @@ let project = Project(name: "Command", targets: [
         destinations: .macOS,
         product: .unitTests,
         bundleId: "io.tuist.CommandTests",
-        deploymentTargets: .macOS("12.0"),
+        deploymentTargets: .macOS("14.0"),
         sources: [
             "Tests/CommandTests/**/*.swift",
         ],

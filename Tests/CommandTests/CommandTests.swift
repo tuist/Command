@@ -1,12 +1,15 @@
 import XCTest
 @testable import Command
 
-final class TerminalSizeTests: XCTestCase {
-    func test_current_doesnt_return_nil() {
-        // Given/When
-        let got = TerminalSize.current()
+final class CommandTests: XCTestCase {
+    func test_runs_successfully() async throws {
+        // Given
+        let commandRunner = CommandRunner()
+
+        // When
+        let result = try await commandRunner.run(arguments: ["echo", "foo"]).reduce(into: [String]()) { $0.append($1.utf8String) }
 
         // Then
-        // XCTAssertNotNil(got)
+        XCTAssertEqual(result, ["foo\n"])
     }
 }
