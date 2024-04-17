@@ -62,14 +62,14 @@ public enum CommandEvent {
 
 public enum CommandError: Error, CustomStringConvertible {
     case couldntGetWorkingDirectory
-    case terminated(Int32)
+    case terminated(Int32, stderr: String)
     case signalled(Int32)
 
     public var description: String {
         switch self {
         case .couldntGetWorkingDirectory: return "Couldn't obtain the working directory necessary to run the command"
         case let .signalled(code): return "The command terminated after receiving a signal with code \(code)"
-        case let .terminated(code): return "The command terminated with the code \(code)"
+        case let .terminated(code, _): return "The command terminated with the code \(code)"
         }
     }
 }
@@ -94,6 +94,8 @@ public struct CommandRunner {
                         }
                         workingDirectory = try! .init(validating: currentWorkingDirectory.pathString)
                     }
+                    
+                    var collectedStdErr = ""
 
                     // Process
                     let process = TSCBasic.Process(
@@ -104,6 +106,7 @@ public struct CommandRunner {
                         outputRedirection: .stream(stdout: { output in
                             continuation.yield(.standardOutput(output))
                         }, stderr: { output in
+                            collectedStdErr.append(String(decoding: output, as: Unicode.UTF8.self))
                             continuation.yield(.standardError(output))
                         }, redirectStderr: false),
                         startNewProcessGroup: startNewProcessGroup,
@@ -129,7 +132,7 @@ public struct CommandRunner {
                         }
                     case let .terminated(code: code):
                         if code != 0 {
-                            throw CommandError.terminated(code)
+                            throw CommandError.terminated(code, stderr: collectedStdErr)
                         }
                     }
                     continuation.finish()
