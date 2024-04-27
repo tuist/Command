@@ -11,6 +11,7 @@ let project = Project(name: "Command", targets: [
             "Sources/Command/**/*.swift",
         ],
         dependencies: [
+            .external(name: "Logging"),
             .external(name: "TSCBasic"),
             .external(name: "Path"),
         ],

@@ -16,6 +16,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-tools-support-core", .upToNextMajor(from: "0.6.1")),
         .package(url: "https://github.com/tuist/Path", .upToNextMajor(from: "0.2.0")),
+        .package(url: "https://github.com/apple/swift-log", .upToNextMajor(from: "1.5.4"))
     ],
     targets: [
         .target(
@@ -23,6 +24,7 @@ let package = Package(
             dependencies: [
                 .product(name: "TSCBasic", package: "swift-tools-support-core"),
                 .product(name: "Path", package: "Path"),
+                .product(name: "Logging", package: "swift-log")
             ],
             swiftSettings: [
                 .define("MOCKING", .when(configuration: .debug)),
