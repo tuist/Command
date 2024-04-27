@@ -6,7 +6,7 @@ let project = Project(name: "Command", targets: [
         destinations: .macOS,
         product: .staticFramework,
         bundleId: "io.tuist.Command",
-        deploymentTargets: .macOS("14.0"),
+        deploymentTargets: .macOS("13.0"),
         sources: [
             "Sources/Command/**/*.swift",
         ],
@@ -24,7 +24,7 @@ let project = Project(name: "Command", targets: [
         destinations: .macOS,
         product: .unitTests,
         bundleId: "io.tuist.CommandTests",
-        deploymentTargets: .macOS("14.0"),
+        deploymentTargets: .macOS("13.0"),
         sources: [
             "Tests/CommandTests/**/*.swift",
         ],

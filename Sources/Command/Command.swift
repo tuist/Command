@@ -92,6 +92,7 @@ public struct CommandRunner {
                         guard let currentWorkingDirectory = localFileSystem.currentWorkingDirectory else {
                             throw CommandError.couldntGetWorkingDirectory
                         }
+                        // swiftlint:disable:next force_try
                         workingDirectory = try! .init(validating: currentWorkingDirectory.pathString)
                     }
 
@@ -101,6 +102,7 @@ public struct CommandRunner {
                     let process = TSCBasic.Process(
                         arguments: arguments,
                         environment: environment,
+                        // swiftlint:disable:next force_try
                         workingDirectory: try! TSCBasic
                             .AbsolutePath(validating: workingDirectory!.pathString),
                         outputRedirection: .stream(stdout: { output in
