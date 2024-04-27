@@ -94,7 +94,7 @@ public struct CommandRunner {
                         }
                         workingDirectory = try! .init(validating: currentWorkingDirectory.pathString)
                     }
-                    
+
                     var collectedStdErr = ""
 
                     // Process
