@@ -9,7 +9,7 @@ hero:
   actions:
     - theme: brand
       text: Get started
-      link: /components/yes-or-no-prompt
+      link: /guides/what-is-command
 
 features:
   - title: Linux-compatible

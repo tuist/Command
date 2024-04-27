@@ -15,15 +15,20 @@ export default defineConfig({
 
     sidebar: [
       {
-        text: 'Components',
+        text: 'Command',
         items: [
-          { text: 'YesOrNoPrompt', link: '/components/yes-or-no-prompt' },
+          { text: 'What is Command?', link: '/guides/what-is-command' },
+          { text: 'Usage', link: '/guides/usage' },
         ]
       }
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/tuist/Command' }
+      { icon: 'github', link: 'https://github.com/tuist/Command' },
+      { icon: 'x', link: 'https://x.com/tuistio' },
+      { icon: 'mastodon', link: 'https://fosstodon.org/@tuist' },
+      { icon: 'slack', link: 'https://fosstodon.org/@tuist' },
+      { icon: 'discord', link: 'https://discord.gg/MnqrEMRFDj' }
     ]
   }
 })
