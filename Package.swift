@@ -27,6 +27,7 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
             ],
             swiftSettings: [
+                .enableExperimentalFeature("StrictConcurrency"),
                 .define("MOCKING", .when(configuration: .debug)),
             ]
         ),
