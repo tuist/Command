@@ -1,5 +1,5 @@
 import Foundation
-@preconcurrency import Logging
+import Logging
 import Path
 import TSCBasic
 
