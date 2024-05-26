@@ -15,10 +15,13 @@ let project = Project(name: "Command", targets: [
             .external(name: "TSCBasic"),
             .external(name: "Path"),
         ],
-        settings: .settings(configurations: [
-            .debug(name: .debug, settings: ["SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) MOCKING"]),
-            .release(name: .release, settings: [:]),
-        ])
+        settings: .settings(
+            base: ["SWIFT_STRICT_CONCURRENCY": "complete"],
+            configurations: [
+                .debug(name: .debug, settings: ["SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) MOCKING"]),
+                .release(name: .release, settings: [:]),
+            ]
+        )
     ),
     .target(
         name: "CommandTests",

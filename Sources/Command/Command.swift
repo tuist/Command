@@ -7,7 +7,7 @@ import TSCBasic
  `CommandRunning` is a protocol that declares the interface to run system processes.
  The main implementation of the protocol is `CommandRunner`.
  */
-public protocol CommandRunning {
+public protocol CommandRunning: Sendable {
     /// Runs a command in the system.
     /// - Parameters:
     ///   - arguments: The command arguments where the first argument represents the executable. If the executable is not an
@@ -118,7 +118,7 @@ extension CommandRunning {
     }
 }
 
-public enum CommandEvent {
+public enum CommandEvent: Sendable {
     case standardOutput([UInt8])
     case standardError([UInt8])
 
@@ -132,7 +132,7 @@ public enum CommandEvent {
     }
 }
 
-public enum CommandError: Error, CustomStringConvertible {
+public enum CommandError: Error, CustomStringConvertible, Sendable {
     case couldntGetWorkingDirectory
     case terminated(Int32, stderr: String)
     case signalled(Int32)
@@ -146,8 +146,8 @@ public enum CommandError: Error, CustomStringConvertible {
     }
 }
 
-public struct CommandRunner {
-    var logger: Logger?
+public struct CommandRunner: Sendable {
+    let logger: Logger?
 
     public init(logger: Logger? = nil) {
         self.logger = logger
