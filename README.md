@@ -1,4 +1,4 @@
-# Command 🫀
+# Command
 
 Command is a micro Swift Package that provides utilities for running system processes. We extracted it from Tuist to make it available for other projects that might need to run system processes.
 
