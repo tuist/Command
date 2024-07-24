@@ -1,3 +1,8 @@
 import ProjectDescription
 
-let config = Config(cloud: .cloud(projectId: "tuist/command"))
+let config = Config(
+    fullHandle: "tuist/command",
+    generationOptions: .options(
+        optionalAuthentication: true
+    )
+)
