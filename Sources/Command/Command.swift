@@ -130,6 +130,13 @@ public enum CommandEvent: Sendable {
             String(decoding: bytes, as: Unicode.UTF8.self)
         }
     }
+
+    public var isError: Bool {
+        switch self {
+        case .standardError: true
+        default: false
+        }
+    }
 }
 
 public enum CommandError: Error, CustomStringConvertible, Sendable {
