@@ -124,9 +124,8 @@ public enum CommandEvent: Sendable {
 
     public var utf8String: String {
         switch self {
-        case let .standardOutput(bytes):
-            String(decoding: bytes, as: Unicode.UTF8.self)
-        case let .standardError(bytes):
+        case let .standardOutput(bytes),
+             let .standardError(bytes):
             String(decoding: bytes, as: Unicode.UTF8.self)
         }
     }
