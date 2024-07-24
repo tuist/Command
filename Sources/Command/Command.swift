@@ -153,7 +153,7 @@ public enum CommandError: Error, CustomStringConvertible, Sendable {
     }
 }
 
-public struct CommandRunner: Sendable {
+public struct CommandRunner: CommandRunning, Sendable {
     let logger: Logger?
 
     public init(logger: Logger? = nil) {
