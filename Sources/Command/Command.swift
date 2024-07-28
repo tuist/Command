@@ -133,7 +133,7 @@ public enum CommandEvent: Sendable {
     public var isError: Bool {
         switch self {
         case .standardError: true
-        default: false
+        case .standardOutput: false
         }
     }
 }
