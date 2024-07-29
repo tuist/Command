@@ -124,10 +124,16 @@ public enum CommandEvent: Sendable {
 
     public var utf8String: String {
         switch self {
-        case let .standardOutput(bytes):
+        case let .standardOutput(bytes),
+             let .standardError(bytes):
             String(decoding: bytes, as: Unicode.UTF8.self)
-        case let .standardError(bytes):
-            String(decoding: bytes, as: Unicode.UTF8.self)
+        }
+    }
+
+    public var isError: Bool {
+        switch self {
+        case .standardError: true
+        case .standardOutput: false
         }
     }
 }
@@ -146,7 +152,7 @@ public enum CommandError: Error, CustomStringConvertible, Sendable {
     }
 }
 
-public struct CommandRunner: Sendable {
+public struct CommandRunner: CommandRunning, Sendable {
     let logger: Logger?
 
     public init(logger: Logger? = nil) {
