@@ -7,4 +7,4 @@ docker run --rm \
     --workdir "/package" \
     swift:5.9.2 \
     /bin/bash -c \
-    "swift build --configuration release --build-path ./.build/linux"
+    "swift test --build-path ./.build/linux"
