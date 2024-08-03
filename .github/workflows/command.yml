@@ -18,7 +18,7 @@ jobs:
     name: "Release build on ${{ matrix.os }}"
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-13]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -30,7 +30,7 @@ jobs:
 
   build_tuist:
     name: "Tuist build"
-    runs-on: "macos-14"
+    runs-on: "macos-latest"
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode
@@ -47,8 +47,7 @@ jobs:
     name: "Test on ${{ matrix.os }}"
     strategy:
       matrix:
-        # FIXME: Mockable doesn't work on Linux
-        os: [macos-13]
+        os: [macos-latest, ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -60,7 +59,7 @@ jobs:
 
   test_tuist:
     name: "Tuist test"
-    runs-on: "macos-14"
+    runs-on: "macos-latest"
     env:
       TUIST_CONFIG_CLOUD_TOKEN: ${{ secrets.TUIST_CONFIG_CLOUD_TOKEN }}
     steps:
@@ -77,7 +76,7 @@ jobs:
 
   lint:
     name: Lint
-    runs-on: macos-14
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v2
