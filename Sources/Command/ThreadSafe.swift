@@ -1,13 +1,8 @@
 import Foundation
 
-/// Type that ensures thread safe access to the underlying value.
+/// Type that ensures thread-safe access to the underlying value using DispatchQueue.
 public final class ThreadSafe<T>: @unchecked Sendable {
-    private let _lock: UnsafeMutablePointer<os_unfair_lock> = {
-        let lock = UnsafeMutablePointer<os_unfair_lock>.allocate(capacity: 1)
-        lock.initialize(to: os_unfair_lock())
-        return lock
-    }()
-
+    private let queue = DispatchQueue(label: "com.threadsafety.queue", attributes: .concurrent)
     private var _value: T
 
     /// Returns the value boxed by `ThreadSafe`
@@ -27,9 +22,9 @@ public final class ThreadSafe<T>: @unchecked Sendable {
      */
     @discardableResult
     public func mutate<Result>(_ body: (inout T) throws -> Result) rethrows -> Result {
-        os_unfair_lock_lock(_lock)
-        defer { os_unfair_lock_unlock(_lock) }
-        return try body(&_value)
+        try queue.sync(flags: .barrier) {
+            try body(&_value)
+        }
     }
 
     /// Like `mutate`, but passes the value as readonly, returning the result of the closure.
@@ -40,8 +35,8 @@ public final class ThreadSafe<T>: @unchecked Sendable {
     /// let sum = array.withValue { $0.reduce(0, +) } // 6
     /// ```
     public func withValue<Result>(_ body: (T) throws -> Result) rethrows -> Result {
-        try mutate {
-            try body($0)
+        try queue.sync {
+            try body(_value)
         }
     }
 
@@ -54,7 +49,7 @@ public final class ThreadSafe<T>: @unchecked Sendable {
      let optionalString: ThreadSafe<String?> = ThreadSafe("Initial Value")
      ```
 
-     - Parameter initial : initial value used within the Atmoic box
+     - Parameter initial : initial value used within the Atomic box
      */
     public init(_ initial: T) { _value = initial }
 }

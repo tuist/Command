@@ -17,7 +17,7 @@ let project = Project(name: "Command", targets: [
         settings: .settings(
             base: ["SWIFT_STRICT_CONCURRENCY": "complete"],
             configurations: [
-                .debug(name: .debug, settings: ["SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) MOCKING"]),
+                .debug(name: .debug, settings: [:]),
                 .release(name: .release, settings: [:]),
             ]
         )

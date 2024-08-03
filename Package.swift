@@ -26,7 +26,6 @@ let package = Package(
             ],
             swiftSettings: [
                 .enableExperimentalFeature("StrictConcurrency"),
-                .define("MOCKING", .when(configuration: .debug)),
             ]
         ),
         .testTarget(
