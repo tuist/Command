@@ -290,6 +290,8 @@ public struct CommandRunner: CommandRunning, Sendable {
         do {
             try process.run()
         } catch {
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            print(String(data: data, encoding: .utf8)!)
             throw CommandError.errorObtainingExecutable(firstArgument)
         }
 
