@@ -189,7 +189,7 @@ public struct CommandRunner: CommandRunning, Sendable {
                     stdoutPipe.fileHandleForReading.readabilityHandler = { handle in
                         let data = handle.availableData
                         if data.count > 0 {
-                            stderrQueue.async {
+                            stdoutQueue.async {
                                 continuation.yield(.standardOutput([UInt8](data)))
                             }
                         }
@@ -282,7 +282,7 @@ public struct CommandRunner: CommandRunning, Sendable {
 
         if let output = String(data: data, encoding: .utf8) {
             let trimmedOutput = output.trimmingCharacters(in: .whitespacesAndNewlines)
-            return trimmedOutput.isEmpty ? nil : URL(filePath: trimmedOutput)
+            return trimmedOutput.isEmpty ? nil : URL(fileURLWithPath: trimmedOutput)
         }
 
         return nil
