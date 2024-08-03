@@ -227,6 +227,22 @@ public struct CommandRunner: CommandRunning, Sendable {
                     try process.run()
                     process.waitUntilExit()
 
+                    // Read remaining data from stdout and stderr
+                    stdoutQueue.sync {
+                        if let data = try? stdoutPipe.fileHandleForReading.readToEnd(), data.count > 0 {
+                            continuation.yield(.standardOutput([UInt8](data)))
+                        }
+                    }
+
+                    stderrQueue.sync {
+                        if let data = try? stderrPipe.fileHandleForReading.readToEnd(), data.count > 0 {
+                            continuation.yield(.standardError([UInt8](data)))
+                            if let output = String(data: data, encoding: .utf8) {
+                                collectedStdErr.mutate { $0.append(output) }
+                            }
+                        }
+                    }
+
                     stdoutPipe.fileHandleForReading.readabilityHandler = nil
                     stderrPipe.fileHandleForReading.readabilityHandler = nil
 
