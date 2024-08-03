@@ -14,7 +14,6 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-tools-support-core", .upToNextMajor(from: "0.6.1")),
         .package(url: "https://github.com/tuist/Path", .upToNextMajor(from: "0.3.0")),
         .package(url: "https://github.com/apple/swift-log", .upToNextMajor(from: "1.6.1")),
     ],
@@ -22,7 +21,6 @@ let package = Package(
         .target(
             name: "Command",
             dependencies: [
-                .product(name: "TSCBasic", package: "swift-tools-support-core"),
                 .product(name: "Path", package: "Path"),
                 .product(name: "Logging", package: "swift-log"),
             ],

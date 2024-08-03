@@ -12,7 +12,6 @@ let project = Project(name: "Command", targets: [
         ],
         dependencies: [
             .external(name: "Logging"),
-            .external(name: "TSCBasic"),
             .external(name: "Path"),
         ],
         settings: .settings(
