@@ -19,11 +19,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        swift: ["5.9"]
+        swift: ["5.10.0"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: swift-actions/setup-swift@v2
+      - uses: SwiftyLab/setup-swift@latest
         with:
           swift-version: ${{ matrix.swift }}
       - uses: jdx/mise-action@v2
@@ -57,11 +57,11 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        swift: ["5.9"]
+        swift: ["5.10.0"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: swift-actions/setup-swift@v2
+      - uses: SwiftyLab/setup-swift@latest
         with:
           swift-version: ${{ matrix.swift }}
       - uses: jdx/mise-action@v2

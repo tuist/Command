@@ -1,4 +1,4 @@
-// swift-tools-version: 5.8.1
+// swift-tools-version: 5.10
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -25,7 +25,7 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
             ],
             swiftSettings: [
-                .enableExperimentalFeature("StrictConcurrency"),
+                // .enableExperimentalFeature("StrictConcurrency"),
             ]
         ),
         .testTarget(
