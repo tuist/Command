@@ -5,6 +5,15 @@
 
 Command is a micro Swift Package that provides utilities for running system processes. We extracted it from Tuist to make it available for other projects that might need to run system processes.
 
+## Motivation
+
+Given that `Foundation.Process` exists, you might be wondering why we created this package. There are several reasons:
+
+- We integrate with [swift-log](https://github.com/apple/swift-log) to log debug information about the commands that are being run.
+- We provide a more user-friendly API that makes it easier to run commands.
+- We align the API with Swift's structured concurrency model, making it easier to run commands concurrently.
+- We provide better error handling, making it easier to understand what went wrong when running a command.
+
 ## Development
 
 ### Using Tuist
