@@ -23,9 +23,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v2
+        if: runner.os == 'Linux' || runner.os == 'macOS'
         with:
           experimental: true
       - name: Run
+        if: runner.os == 'Linux' || runner.os == 'macOS'
         run: mise run build-spm
 
   build_tuist:
@@ -52,9 +54,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v2
+        if: runner.os == 'Linux' || runner.os == 'macOS'
         with:
           experimental: true
       - name: Run
+        if: runner.os == 'Linux' || runner.os == 'macOS'
         run: mise run test-spm
 
   test_tuist:
