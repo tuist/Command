@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        swift: ["5.9.2"]
+        swift: ["5.9"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -57,7 +57,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        swift: ["5.9.2"]
+        swift: ["5.9"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
