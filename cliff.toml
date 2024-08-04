@@ -1,9 +1,9 @@
 # git-cliff ~ configuration file
 # https://git-cliff.org/docs/configuration
 
-# [remote.github]
-# owner = "orhun"
-# repo = "git-cliff"
+[remote.github]
+owner = "tuist"
+repo = "command"
 # token = ""
 
 [changelog]
@@ -62,7 +62,7 @@ postprocessors = []
 
 [git]
 # parse the commits based on https://www.conventionalcommits.org
-conventional_commits = false
+conventional_commits = true
 # filter out the commits that are not conventional
 filter_unconventional = true
 # process each line of a commit as an individual commit
@@ -77,7 +77,7 @@ protect_breaking_commits = false
 # filter out the commits that are not matched by commit parsers
 filter_commits = false
 # regex for matching git tags
-tag_pattern = "v[0-9].*"
+tag_pattern = "[0-9].*"
 # regex for skipping tags
 skip_tags = "beta|alpha"
 # regex for ignoring tags
@@ -86,3 +86,8 @@ ignore_tags = "rc"
 topo_order = false
 # sort the commits inside sections by oldest/newest order
 sort_commits = "newest"
+
+[bump]
+breaking_always_bump_major = true
+features_always_bump_minor=true
+initial_tag="0.2.1"
