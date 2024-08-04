@@ -55,13 +55,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: echo "NEXT_VERSION=$(git cliff --bumped-version)" >> "$GITHUB_OUTPUT"
-      - name: Get changelog
-        id: changelog
+      - name: Get release notes
+        id: release-notes
         if: env.should-release == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "CHANGELOG<<EOF" >> "$GITHUB_OUTPUT"
+          echo "RELEASE_NOTES<<EOF" >> "$GITHUB_OUTPUT"
           git cliff --unreleased >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
       - name: Update CHANGELOG.md
@@ -86,5 +86,5 @@ jobs:
           repository: tuist/Command
           name: ${{ steps.next-version.outputs.NEXT_VERSION }}
           tag_name: ${{ steps.next-version.outputs.NEXT_VERSION }}
-          body: ${{ steps.changelog.outputs.CHANGELOG }}
+          body: ${{ steps.release-notes.outputs.RELEASE_NOTES }}
           target_commitish: ${{ steps.auto-commit-action.outputs.commit_hash }}
