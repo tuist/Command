@@ -1,15 +1,13 @@
-import XCTest
+import Testing
 @testable import Command
 
-final class CommandTests: XCTestCase {
-    func test_runs_successfully() async throws {
-        // Given
-        let commandRunner = CommandRunner()
+@Test func test_runs_successfully() async throws {
+    // Given
+    let commandRunner = CommandRunner()
 
-        // When
-        let result = try await commandRunner.run(arguments: ["echo", "foo"]).reduce(into: [String]()) { $0.append($1.utf8String) }
+    // When
+    let result = try await commandRunner.run(arguments: ["echo", "foo"]).reduce(into: [String]()) { $0.append($1.utf8String) }
 
-        // Then
-        XCTAssertEqual(result, ["foo\n"])
-    }
+    // Then
+    #expect(result == ["foo\n"])
 }

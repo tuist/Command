@@ -5,6 +5,6 @@ set -euo pipefail
 docker run --rm \
     --volume "$MISE_PROJECT_ROOT:/package" \
     --workdir "/package" \
-    swift:5.10.0 \
+    swiftlang/swift:nightly-6.0-focal \
     /bin/bash -c \
-    "swift build --configuration release --build-path ./.build/linux"
+    "swift build --product Command --build-path ./.build/linux"

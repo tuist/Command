@@ -140,14 +140,17 @@ public enum CommandEvent: Sendable {
 public enum CommandError: Error, CustomStringConvertible, Sendable {
     case terminated(Int32, stderr: String)
     case signalled(Int32)
-    case errorObtainingExecutable(String)
+    case errorObtainingExecutable(executable: String, error: String)
     case executableNotFound(String)
 
     public var description: String {
         switch self {
         case let .signalled(code): return "The command terminated after receiving a signal with code \(code)"
         case let .terminated(code, _): return "The command terminated with the code \(code)"
-        case let .errorObtainingExecutable(name): return "There was an error trying to obtain the path to the executable '\(name)'."
+        case let .errorObtainingExecutable(
+            name,
+            error
+        ): return "There was an error trying to obtain the path to the executable '\(name)': \(error)"
         case let .executableNotFound(name): return "Couldn't locate the executable '\(name)' in the environment."
         }
     }
@@ -213,11 +216,13 @@ public struct CommandRunner: CommandRunning, Sendable {
                     process.arguments = Array(arguments.dropFirst())
                     process.executableURL = try lookupExecutable(firstArgument: arguments.first)
 
+                    let threadSafeProcess = ThreadSafe(process)
+
                     continuation.onTermination = { termination in
                         switch termination {
                         case .cancelled:
-                            if process.isRunning {
-                                process.terminate()
+                            if threadSafeProcess.value.isRunning {
+                                threadSafeProcess.value.terminate()
                             }
                         default:
                             break
@@ -291,8 +296,8 @@ public struct CommandRunner: CommandRunning, Sendable {
             try process.run()
         } catch {
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            print(String(data: data, encoding: .utf8)!)
-            throw CommandError.errorObtainingExecutable(firstArgument)
+            let output = String(data: data, encoding: .utf8) ?? ""
+            throw CommandError.errorObtainingExecutable(executable: firstArgument, error: output)
         }
 
         let data = pipe.fileHandleForReading.readDataToEndOfFile()

@@ -2,7 +2,6 @@
 "tuist" = "4.22.0"
 "swiftlint" = "0.54.0"
 "swiftformat" = "0.52.10"
-"swift" = "5.10.0"
 "pnpm" = "9.6.0"
 "node" = "20.16.0"
 "podman" = "4.9.3"
