@@ -65,6 +65,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode
+        if: runner.os == 'macOS'
         run: sudo xcode-select -switch /Applications/Xcode_$(cat .xcode-version).app
       - uses: SwiftyLab/setup-swift@latest
         with:
