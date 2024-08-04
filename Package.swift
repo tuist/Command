@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 5.10
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -16,7 +16,6 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/tuist/Path", .upToNextMajor(from: "0.3.0")),
         .package(url: "https://github.com/apple/swift-log", .upToNextMajor(from: "1.6.1")),
-        .package(url: "https://github.com/swiftlang/swift-testing", .upToNextMajor(from: "0.11.0")),
     ],
     targets: [
         .target(
@@ -33,7 +32,6 @@ let package = Package(
             name: "CommandTests",
             dependencies: [
                 "Command",
-                .product(name: "Testing", package: "swift-testing"),
             ]
         ),
     ]
