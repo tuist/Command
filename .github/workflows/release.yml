@@ -39,8 +39,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "NEXT_VERSION<<EOF" >> "$GITHUB_OUTPUT"
-          git cliff --bumped-version >> "$GITHUB_OUTPUT"
+          echo "CHANGELOG<<EOF" >> "$GITHUB_OUTPUT"
+          git cliff --unreleased >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
       - name: Update CHANGELOG.md
         env:
