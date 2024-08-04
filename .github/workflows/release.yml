@@ -33,7 +33,7 @@ jobs:
         id: is-releasable
         run: |
           # Run git cliff and save the output
-          bumped_output=$(git cliff --bumped)
+          bumped_output=$(git cliff --bump)
           echo "Bumped output:"
           echo "${bumped_output}"
   
@@ -68,7 +68,7 @@ jobs:
         if: env.should-release == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: git cliff --bumped -o CHANGELOG.md
+        run: git cliff --bump -o CHANGELOG.md
       - name: Commit changes
         id: auto-commit-action
         uses: stefanzweifel/git-auto-commit-action@v5
