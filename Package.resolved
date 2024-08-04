@@ -1,4 +1,5 @@
 {
+  "originHash" : "42117a24adae9d77816b090d33a4ef9548125c0f3ef95e49547663ad6064444d",
   "pins" : [
     {
       "identity" : "path",
@@ -17,25 +18,7 @@
         "revision" : "9cb486020ebf03bfa5b5df985387a14a98744537",
         "version" : "1.6.1"
       }
-    },
-    {
-      "identity" : "swift-system",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-system.git",
-      "state" : {
-        "revision" : "025bcb1165deab2e20d4eaba79967ce73013f496",
-        "version" : "1.2.1"
-      }
-    },
-    {
-      "identity" : "swift-tools-support-core",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-tools-support-core",
-      "state" : {
-        "revision" : "3b13e439a341bbbfe0f710c7d1be37221745ef1a",
-        "version" : "0.6.1"
-      }
     }
   ],
-  "version" : 2
+  "version" : 3
 }

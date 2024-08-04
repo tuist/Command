@@ -1,7 +1,6 @@
 import Foundation
 import Logging
 import Path
-import TSCBasic
 
 /**
  `CommandRunning` is a protocol that declares the interface to run system processes.
@@ -40,7 +39,7 @@ extension CommandRunning {
     public func run(arguments: [String]) -> AsyncThrowingStream<CommandEvent, any Error> {
         run(
             arguments: arguments,
-            environment: ProcessEnv.vars,
+            environment: ProcessInfo.processInfo.environment,
             workingDirectory: nil,
             startNewProcessGroup: false,
             log: true
@@ -60,7 +59,7 @@ extension CommandRunning {
     public func run(arguments: [String], log: Bool) -> AsyncThrowingStream<CommandEvent, any Error> {
         run(
             arguments: arguments,
-            environment: ProcessEnv.vars,
+            environment: ProcessInfo.processInfo.environment,
             workingDirectory: nil,
             startNewProcessGroup: false,
             log: log
@@ -110,7 +109,7 @@ extension CommandRunning {
     ) -> AsyncThrowingStream<CommandEvent, any Error> {
         run(
             arguments: arguments,
-            environment: ProcessEnv.vars,
+            environment: ProcessInfo.processInfo.environment,
             workingDirectory: workingDirectory,
             startNewProcessGroup: false,
             log: log
@@ -139,15 +138,20 @@ public enum CommandEvent: Sendable {
 }
 
 public enum CommandError: Error, CustomStringConvertible, Sendable {
-    case couldntGetWorkingDirectory
     case terminated(Int32, stderr: String)
     case signalled(Int32)
+    case errorObtainingExecutable(executable: String, error: String)
+    case executableNotFound(String)
 
     public var description: String {
         switch self {
-        case .couldntGetWorkingDirectory: return "Couldn't obtain the working directory necessary to run the command"
         case let .signalled(code): return "The command terminated after receiving a signal with code \(code)"
         case let .terminated(code, _): return "The command terminated with the code \(code)"
+        case let .errorObtainingExecutable(
+            name,
+            error
+        ): return "There was an error trying to obtain the path to the executable '\(name)': \(error)"
+        case let .executableNotFound(name): return "Couldn't locate the executable '\(name)' in the environment."
         }
     }
 }
@@ -161,9 +165,9 @@ public struct CommandRunner: CommandRunning, Sendable {
 
     public func run(
         arguments: [String],
-        environment: [String: String] = ProcessEnv.vars,
+        environment _: [String: String] = ProcessInfo.processInfo.environment,
         workingDirectory: Path.AbsolutePath? = nil,
-        startNewProcessGroup: Bool = false,
+        startNewProcessGroup _: Bool = false,
         log _: Bool = false
     ) -> AsyncThrowingStream<CommandEvent, any Error> {
         AsyncThrowingStream(CommandEvent.self, bufferingPolicy: .unbounded) { continuation in
@@ -172,61 +176,92 @@ public struct CommandRunner: CommandRunning, Sendable {
                     // Get the working directory if not passed.
                     var workingDirectory = workingDirectory
                     if workingDirectory == nil {
-                        guard let currentWorkingDirectory = localFileSystem.currentWorkingDirectory else {
-                            throw CommandError.couldntGetWorkingDirectory
-                        }
                         // swiftlint:disable:next force_try
-                        workingDirectory = try! .init(validating: currentWorkingDirectory.pathString)
+                        workingDirectory = try! .init(validating: FileManager.default.currentDirectoryPath)
                     }
 
-                    var collectedStdErr = ""
+                    let collectedStdErr: ThreadSafe<String> = ThreadSafe("")
 
                     // Process
-                    let process = TSCBasic.Process(
-                        arguments: arguments,
-                        environment: environment,
-                        // swiftlint:disable:next force_try
-                        workingDirectory: try! TSCBasic
-                            .AbsolutePath(validating: workingDirectory!.pathString),
-                        outputRedirection: .stream(stdout: { output in
-                            let outputString = String(decoding: output, as: Unicode.UTF8.self)
-                            continuation.yield(.standardOutput(output))
-                            if let logger {
-                                logger.debug("\(outputString)", source: "command: \(arguments.joined(separator: " "))")
+                    let process = Process()
+                    let stdoutPipe = Pipe()
+                    let stderrPipe = Pipe()
+                    let stdoutQueue = DispatchQueue(label: "io.tuist.Command.stdoutQueue")
+                    let stderrQueue = DispatchQueue(label: "io.tuist.Command.stderrQueue")
+
+                    stdoutPipe.fileHandleForReading.readabilityHandler = { handle in
+                        let data = handle.availableData
+                        if data.count > 0 {
+                            stdoutQueue.async {
+                                continuation.yield(.standardOutput([UInt8](data)))
                             }
-                        }, stderr: { output in
-                            let outputString = String(decoding: output, as: Unicode.UTF8.self)
-                            collectedStdErr.append(outputString)
-                            continuation.yield(.standardError(output))
-                            if let logger {
-                                logger.error("\(outputString)", source: "command: \(arguments.joined(separator: " "))")
+                        }
+                    }
+
+                    stderrPipe.fileHandleForReading.readabilityHandler = { handle in
+                        let data = handle.availableData
+                        if data.count > 0 {
+                            stderrQueue.async {
+                                continuation.yield(.standardError([UInt8](data)))
+                                if let output = String(data: data, encoding: .utf8) {
+                                    collectedStdErr.mutate { $0.append(output) }
+                                }
                             }
-                        }, redirectStderr: false),
-                        startNewProcessGroup: startNewProcessGroup,
-                        loggingHandler: nil
-                    )
+                        }
+                    }
+
+                    process.currentDirectoryURL = URL(fileURLWithPath: workingDirectory!.pathString)
+                    process.standardOutput = stdoutPipe
+                    process.standardError = stderrPipe
+                    process.arguments = Array(arguments.dropFirst())
+                    process.executableURL = try lookupExecutable(firstArgument: arguments.first)
+
+                    let threadSafeProcess = ThreadSafe(process)
 
                     continuation.onTermination = { termination in
                         switch termination {
                         case .cancelled:
-                            process.signal(SIGINT)
+                            if threadSafeProcess.value.isRunning {
+                                threadSafeProcess.value.terminate()
+                            }
                         default:
                             break
                         }
                     }
 
-                    try process.launch()
-                    let result = try process.waitUntilExit()
+                    try process.run()
+                    process.waitUntilExit()
 
-                    switch result.exitStatus {
-                    case let .signalled(signal: code):
-                        if code != 0 {
-                            throw CommandError.signalled(code)
+                    // Read remaining data from stdout and stderr
+                    stdoutQueue.sync {
+                        if let data = try? stdoutPipe.fileHandleForReading.readToEnd(), data.count > 0 {
+                            continuation.yield(.standardOutput([UInt8](data)))
                         }
-                    case let .terminated(code: code):
-                        if code != 0 {
-                            throw CommandError.terminated(code, stderr: collectedStdErr)
+                    }
+
+                    stderrQueue.sync {
+                        if let data = try? stderrPipe.fileHandleForReading.readToEnd(), data.count > 0 {
+                            continuation.yield(.standardError([UInt8](data)))
+                            if let output = String(data: data, encoding: .utf8) {
+                                collectedStdErr.mutate { $0.append(output) }
+                            }
                         }
+                    }
+
+                    stdoutPipe.fileHandleForReading.readabilityHandler = nil
+                    stderrPipe.fileHandleForReading.readabilityHandler = nil
+
+                    switch process.terminationReason {
+                    case .exit:
+                        if process.terminationStatus != 0 {
+                            throw CommandError.terminated(process.terminationStatus, stderr: collectedStdErr.value)
+                        }
+                    case .uncaughtSignal:
+                        if process.terminationStatus != 0 {
+                            throw CommandError.signalled(process.terminationStatus)
+                        }
+                    @unknown default:
+                        break
                     }
                     continuation.finish()
                 } catch {
@@ -234,5 +269,45 @@ public struct CommandRunner: CommandRunning, Sendable {
                 }
             }
         }
+    }
+
+    fileprivate func lookupExecutable(firstArgument: String?) throws -> URL? {
+        guard let firstArgument else { return nil }
+        let command: String
+        let arguments: [String]
+
+        #if os(Windows)
+            command = "where"
+            arguments = [firstArgument]
+        #else
+            command = "/usr/bin/which"
+            arguments = [firstArgument]
+        #endif
+
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: command)
+        process.arguments = arguments
+
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = pipe
+
+        do {
+            try process.run()
+        } catch {
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            let output = String(data: data, encoding: .utf8) ?? ""
+            throw CommandError.errorObtainingExecutable(executable: firstArgument, error: output)
+        }
+
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+
+        if let output = String(data: data, encoding: .utf8) {
+            let trimmedOutput = output.trimmingCharacters(in: .whitespacesAndNewlines)
+            return trimmedOutput.isEmpty ? nil : URL(fileURLWithPath: trimmedOutput)
+        }
+
+        return nil
     }
 }
