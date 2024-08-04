@@ -42,7 +42,10 @@ jobs:
         id: changelog
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: echo "CHANGELOG=$(git cliff --unreleased)" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "NEXT_VERSION<<EOF" >> "$GITHUB_OUTPUT"
+          git cliff --bumped-version >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
       - name: Update CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
