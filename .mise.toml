@@ -5,6 +5,7 @@
 "pnpm" = "9.6.0"
 "node" = "20.16.0"
 "podman" = "4.9.3"
+"git-cliff" = "2.4.0"
 
 [plugins]
 tuist = "https://github.com/asdf-community/asdf-tuist"
