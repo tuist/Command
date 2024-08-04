@@ -2,6 +2,10 @@
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ftuist%2FCommand%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/tuist/Command)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ftuist%2FCommand%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/tuist/Command)
+[![Command](https://github.com/tuist/Command/actions/workflows/command.yml/badge.svg)](https://github.com/tuist/Command/actions/workflows/command.yml)
+[![Docs](https://github.com/tuist/Command/actions/workflows/docs.yml/badge.svg)](https://github.com/tuist/Command/actions/workflows/docs.yml)
 
 Command is a micro Swift Package that provides utilities for running system processes. We extracted it from Tuist to make it available for other projects that might need to run system processes.
 
