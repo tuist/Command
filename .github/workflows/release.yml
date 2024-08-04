@@ -10,10 +10,6 @@ on:
         description: 'The version to release'
         type: string
 
-concurrency:
-  group: release-${{ github.head_ref }}
-  cancel-in-progress: true
-
 permissions:
   contents: write
   pull-requests: read
