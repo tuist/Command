@@ -1,3 +1,11 @@
+## What's Changed in 0.3.0
+* broken release automation due to invalid git cliff command by @pepicrft
+* add spi.yml documentation for the Swift Package Index to add a link to our self-hosted documentation by @pepicrft
+* release process again by @pepicrft
+* release process by @pepicrft
+
+**Full Changelog**: https://github.com/tuist/command/compare/0.2.1...0.3.0
+
 ## What's Changed in 0.2.1
 * chore(deps): update dependency wrangler to v3.68.0 by @renovate[bot] in [#68](https://github.com/tuist/command/pull/68)
 * chore(deps): update dependency tuist to v4.22.0 by @renovate[bot] in [#67](https://github.com/tuist/command/pull/67)
