@@ -16,7 +16,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/tuist/Path", .upToNextMajor(from: "0.3.0")),
         .package(url: "https://github.com/apple/swift-log", .upToNextMajor(from: "1.6.1")),
-        .package(url: "https://github.com/swiftlang/swift-testing.git", branch: "main")
+        .package(url: "https://github.com/swiftlang/swift-testing.git", branch: "main"),
     ],
     targets: [
         .target(
@@ -33,7 +33,7 @@ let package = Package(
             name: "CommandTests",
             dependencies: [
                 "Command",
-                .product(name: "Testing", package: "swift-testing")
+                .product(name: "Testing", package: "swift-testing"),
             ]
         ),
     ]
