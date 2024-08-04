@@ -29,13 +29,35 @@ jobs:
       - uses: jdx/mise-action@v2
         with:
           experimental: true
+      - name: Check if there are releasable changes
+        id: is-releasable
+        run: |
+          # Run git cliff and save the output
+          bumped_output=$(git cliff --bumped)
+          echo "Bumped output:"
+          echo "${bumped_output}"
+  
+          # Read the content of CHANGELOG.md
+          changelog_content=$(cat CHANGELOG.md)
+          echo "CHANGELOG.md content:"
+          echo "${changelog_content}"
+  
+          # Compare the outputs and set the result
+          if [ "${bumped_output}" = "${changelog_content}" ]; then
+            echo "should-release=false" >> $GITHUB_ENV
+          else
+            echo "should-release=true" >> $GITHUB_ENV
+          fi
+      
       - name: Get next version
         id: next-version
+        if: env.should-release == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: echo "NEXT_VERSION=$(git cliff --bumped-version)" >> "$GITHUB_OUTPUT"
       - name: Get changelog
         id: changelog
+        if: env.should-release == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -43,12 +65,14 @@ jobs:
           git cliff --unreleased >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
       - name: Update CHANGELOG.md
+        if: env.should-release == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: git cliff -o CHANGELOG.md
+        run: git cliff --bumped -o CHANGELOG.md
       - name: Commit changes
         id: auto-commit-action
         uses: stefanzweifel/git-auto-commit-action@v5
+        if: env.should-release == 'true'
         with:
           commit_options: '--allow-empty'
           tagging_message: ${{ steps.next-version.outputs.NEXT_VERSION }}
@@ -56,6 +80,7 @@ jobs:
           commit_message: "[Release] Command ${{ steps.next-version.outputs.NEXT_VERSION }}"
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
+        if: env.should-release == 'true'
         with:
           draft: false
           repository: tuist/Command
