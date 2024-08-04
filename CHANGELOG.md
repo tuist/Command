@@ -5,15 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2024-08-04
+### Details
+#### Feat
+- Adjust the convention for the CHANGELOG.md to follow a mix of the GitHub and the keep-a-changelog conventions by @pepicrft
+
 ## [0.3.0] - 2024-08-04
 ### Details
 #### Feat
-- Add spi.yml documentation for the Swift Package Index to add a link to our self-hosted documentation
+- Add spi.yml documentation for the Swift Package Index to add a link to our self-hosted documentation by @pepicrft
 
 #### Fix
-- Broken release automation due to invalid git cliff command
-- Release process again
-- Release process
+- Broken release automation due to invalid git cliff command by @pepicrft
+- Release process again by @pepicrft
+- Release process by @pepicrft
 
 ## [0.2.1] - 2024-08-04
 ### Details
@@ -27,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## New Contributors
 * @allcontributors[bot] made their first contribution
+[0.4.0]: https://github.com/tuist/command/compare/0.3.0..0.4.0
 [0.3.0]: https://github.com/tuist/command/compare/0.2.1..0.3.0
 [0.2.1]: https://github.com/tuist/command/compare/0.2.0..0.2.1
 
