@@ -14,17 +14,11 @@ public protocol CommandRunning: Sendable {
     /// found.
     ///   - environment: The environment variables that will be passed to the process running the command.
     ///   - workingDirectory: The directory from where the command will be executed.
-    ///   - startNewProcessGroup: If true, a new progress group is created for the child making it continue running even if the
-    /// parent is killed or interrupted.
-    ///   - log: If true, the standard output and error messages will be logged through the logger's `.debug` and `.error`
-    /// interfaces respectively.
     /// - Returns: An async throwing stream to subscribe to the emitted events and completion of the underlying process.
     func run(
         arguments: [String],
         environment: [String: String],
-        workingDirectory: Path.AbsolutePath?,
-        startNewProcessGroup: Bool,
-        log: Bool
+        workingDirectory: Path.AbsolutePath?
     ) -> AsyncThrowingStream<CommandEvent, any Error>
 }
 
@@ -40,29 +34,7 @@ extension CommandRunning {
         run(
             arguments: arguments,
             environment: ProcessInfo.processInfo.environment,
-            workingDirectory: nil,
-            startNewProcessGroup: false,
-            log: true
-        )
-    }
-
-    /// Runs a command given its aguments.
-    /// The command will inherit the environment variables and working directory from the current process and the process
-    /// lifecycle will be bound to the current process'.
-    /// - Parameters:
-    ///   - arguments: The command arguments where the first argument represents the executable. If the executable is not an
-    /// absolute path, the executable will be looked up in the system and the execution will fail if the executable can't be
-    /// found.
-    ///   - log: If true, the standard output and error messages will be logged through the logger's `.debug` and `.error`
-    /// interfaces respectively.
-    /// - Returns: An async throwing stream to subscribe to the emitted events and completion of the underlying process.
-    public func run(arguments: [String], log: Bool) -> AsyncThrowingStream<CommandEvent, any Error> {
-        run(
-            arguments: arguments,
-            environment: ProcessInfo.processInfo.environment,
-            workingDirectory: nil,
-            startNewProcessGroup: false,
-            log: log
+            workingDirectory: nil
         )
     }
 
@@ -73,21 +45,7 @@ extension CommandRunning {
         run(
             arguments: arguments,
             environment: environment,
-            log: true
-        )
-    }
-
-    public func run(
-        arguments: [String],
-        environment: [String: String],
-        log: Bool
-    ) -> AsyncThrowingStream<CommandEvent, any Error> {
-        run(
-            arguments: arguments,
-            environment: environment,
-            workingDirectory: nil,
-            startNewProcessGroup: false,
-            log: log
+            workingDirectory: nil
         )
     }
 
@@ -97,35 +55,37 @@ extension CommandRunning {
     ) -> AsyncThrowingStream<CommandEvent, any Error> {
         run(
             arguments: arguments,
-            workingDirectory: workingDirectory,
-            log: true
-        )
-    }
-
-    public func run(
-        arguments: [String],
-        workingDirectory: Path.AbsolutePath,
-        log: Bool
-    ) -> AsyncThrowingStream<CommandEvent, any Error> {
-        run(
-            arguments: arguments,
             environment: ProcessInfo.processInfo.environment,
-            workingDirectory: workingDirectory,
-            startNewProcessGroup: false,
-            log: log
+            workingDirectory: workingDirectory
         )
     }
 }
 
 public enum CommandEvent: Sendable {
+    public enum Pipeline: Hashable, Equatable {
+        case standardOutput
+        case standardError
+    }
+
     case standardOutput([UInt8])
     case standardError([UInt8])
 
-    public var utf8String: String {
+    /// Returns the event pipeline
+    public var pipeline: Pipeline {
+        switch self {
+        case .standardOutput: .standardOutput
+        case .standardError: .standardError
+        }
+    }
+
+    /// Returns the event as a string encoded using the provided encoding.
+    /// - Parameter encoding: Encoding to use.
+    /// - Returns: The string version of the event.
+    public func string(encoding: String.Encoding = .utf8) -> String? {
         switch self {
         case let .standardOutput(bytes),
              let .standardError(bytes):
-            String(decoding: bytes, as: Unicode.UTF8.self)
+            String(data: Data(bytes), encoding: encoding)
         }
     }
 
@@ -166,9 +126,7 @@ public struct CommandRunner: CommandRunning, Sendable {
     public func run(
         arguments: [String],
         environment _: [String: String] = ProcessInfo.processInfo.environment,
-        workingDirectory: Path.AbsolutePath? = nil,
-        startNewProcessGroup _: Bool = false,
-        log _: Bool = false
+        workingDirectory: Path.AbsolutePath? = nil
     ) -> AsyncThrowingStream<CommandEvent, any Error> {
         AsyncThrowingStream(CommandEvent.self, bufferingPolicy: .unbounded) { continuation in
             DispatchQueue(label: "io.tuist.command", attributes: .concurrent).async {
@@ -213,8 +171,14 @@ public struct CommandRunner: CommandRunning, Sendable {
                     process.currentDirectoryURL = URL(fileURLWithPath: workingDirectory!.pathString)
                     process.standardOutput = stdoutPipe
                     process.standardError = stderrPipe
-                    process.arguments = Array(arguments.dropFirst())
-                    process.executableURL = try lookupExecutable(firstArgument: arguments.first)
+                    let processArguments = Array(arguments.dropFirst())
+                    process.arguments = processArguments
+                    let executable = try lookupExecutable(firstArgument: arguments.first)
+                    process.executableURL = executable
+
+                    if let executable {
+                        logger?.debug("Running command: \(executable.absoluteString) \(processArguments.joined(separator: " "))")
+                    }
 
                     let threadSafeProcess = ThreadSafe(process)
 
@@ -283,6 +247,11 @@ public struct CommandRunner: CommandRunning, Sendable {
             command = "/usr/bin/which"
             arguments = [firstArgument]
         #endif
+
+        logger?.log(
+            level: .debug,
+            "Looking up executable \(firstArgument) by running: \(command) \(arguments.joined(separator: " "))"
+        )
 
         let process = Process()
         process.executableURL = URL(fileURLWithPath: command)
