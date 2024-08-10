@@ -273,6 +273,12 @@ public struct CommandRunner: CommandRunning, Sendable {
 
     fileprivate func lookupExecutable(firstArgument: String?) throws -> URL? {
         guard let firstArgument else { return nil }
+
+        // If the first argument is an absolute URL to an executable, return it.
+        if let executablePath = try? Path.AbsolutePath(validating: firstArgument) {
+            return URL(fileURLWithPath: executablePath.pathString)
+        }
+
         let command: String
         let arguments: [String]
 
