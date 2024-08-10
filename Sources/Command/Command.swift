@@ -165,7 +165,7 @@ public struct CommandRunner: CommandRunning, Sendable {
 
     public func run(
         arguments: [String],
-        environment _: [String: String] = ProcessInfo.processInfo.environment,
+        environment: [String: String] = ProcessInfo.processInfo.environment,
         workingDirectory: Path.AbsolutePath? = nil,
         startNewProcessGroup _: Bool = false,
         log _: Bool = false
@@ -214,6 +214,7 @@ public struct CommandRunner: CommandRunning, Sendable {
                     process.standardOutput = stdoutPipe
                     process.standardError = stderrPipe
                     process.arguments = Array(arguments.dropFirst())
+                    process.environment = environment
                     process.executableURL = try lookupExecutable(firstArgument: arguments.first)
 
                     let threadSafeProcess = ThreadSafe(process)
