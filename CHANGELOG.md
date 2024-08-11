@@ -5,13 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2024-08-11
+### Details
+#### Chore
+- Update actions/checkout action to v4 by @renovate[bot]
+
 ## [0.6.0] - 2024-08-11
 ### Details
 #### Feat
 - Not resolve executables that are already passed as absolute paths by @AndrewBarba in [#80](https://github.com/tuist/command/pull/80)
 
-## New Contributors
-* @AndrewBarba made their first contribution in [#80](https://github.com/tuist/command/pull/80)
 ## [0.5.7] - 2024-08-11
 ### Details
 #### Docs
@@ -78,6 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create .all-contributorsrc [skip ci] by @allcontributors[bot]
 - Update README.md [skip ci] by @allcontributors[bot]
 
+[0.6.1]: https://github.com/tuist/command/compare/0.6.0..0.6.1
 [0.6.0]: https://github.com/tuist/command/compare/0.5.7..0.6.0
 [0.5.7]: https://github.com/tuist/command/compare/0.5.6..0.5.7
 [0.5.6]: https://github.com/tuist/command/compare/0.5.5..0.5.6
