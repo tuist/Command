@@ -35,7 +35,7 @@ final class CommandTests: XCTestCase {
 
         // Then
         XCTAssertNotNil(executableURL)
-        XCTAssertTrue(executableURL!.path.hasSuffix("/echo"))
+        XCTAssertTrue(executableURL!.path.hasSuffix("/\(command)"))
     }
 
     func test_lookupExecutable_withInvalidCommand() throws {
