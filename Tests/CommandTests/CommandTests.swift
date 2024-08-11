@@ -43,6 +43,10 @@ final class CommandTests: XCTestCase {
         let commandRunner = CommandRunner()
         let command = "nonexistentcommand"
 
-        XCTAssertNil(try commandRunner.lookupExecutable(firstArgument: command))
+        // When
+        let executableURL = try commandRunner.lookupExecutable(firstArgument: command)
+
+        // Then
+        XCTAssertNil(executableURL)
     }
 }
