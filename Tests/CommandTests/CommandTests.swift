@@ -7,7 +7,7 @@ final class CommandTests: XCTestCase {
         let commandRunner = CommandRunner()
 
         // When
-        let result = try await commandRunner.run(arguments: ["echo", "foo"]).reduce(into: [String]()) { $0.append($1.utf8String) }
+        let result = try await commandRunner.run(arguments: ["echo", "foo"]).reduce(into: [String]()) { $0.append($1.string()) }
 
         // Then
         XCTAssertEqual(result, ["foo\n"])
