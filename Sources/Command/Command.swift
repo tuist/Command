@@ -125,7 +125,7 @@ public struct CommandRunner: CommandRunning, Sendable {
 
     public func run(
         arguments: [String],
-        environment _: [String: String] = ProcessInfo.processInfo.environment,
+        environment: [String: String] = ProcessInfo.processInfo.environment,
         workingDirectory: Path.AbsolutePath? = nil
     ) -> AsyncThrowingStream<CommandEvent, any Error> {
         AsyncThrowingStream(CommandEvent.self, bufferingPolicy: .unbounded) { continuation in
@@ -171,8 +171,11 @@ public struct CommandRunner: CommandRunning, Sendable {
                     process.currentDirectoryURL = URL(fileURLWithPath: workingDirectory!.pathString)
                     process.standardOutput = stdoutPipe
                     process.standardError = stderrPipe
+                    process.environment = environment
+
                     let processArguments = Array(arguments.dropFirst())
                     process.arguments = processArguments
+
                     let executable = try lookupExecutable(firstArgument: arguments.first)
                     process.executableURL = executable
 
@@ -235,8 +238,14 @@ public struct CommandRunner: CommandRunning, Sendable {
         }
     }
 
-    fileprivate func lookupExecutable(firstArgument: String?) throws -> URL? {
+    func lookupExecutable(firstArgument: String?) throws -> URL? {
         guard let firstArgument else { return nil }
+
+        // If the first argument is an absolute URL to an executable, return it.
+        if let executablePath = try? Path.AbsolutePath(validating: firstArgument) {
+            return URL(fileURLWithPath: executablePath.pathString)
+        }
+
         let command: String
         let arguments: [String]
 
