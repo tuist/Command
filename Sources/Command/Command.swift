@@ -238,7 +238,7 @@ public struct CommandRunner: CommandRunning, Sendable {
         }
     }
 
-    internal func lookupExecutable(firstArgument: String?) throws -> URL? {
+    func lookupExecutable(firstArgument: String?) throws -> URL? {
         guard let firstArgument else { return nil }
 
         // If the first argument is an absolute URL to an executable, return it.
