@@ -175,7 +175,7 @@ public struct CommandRunner: CommandRunning, Sendable {
 
                     let processArguments = Array(arguments.dropFirst())
                     process.arguments = processArguments
-                    
+
                     let executable = try lookupExecutable(firstArgument: arguments.first)
                     process.executableURL = executable
 
@@ -238,7 +238,7 @@ public struct CommandRunner: CommandRunning, Sendable {
         }
     }
 
-    fileprivate func lookupExecutable(firstArgument: String?) throws -> URL? {
+    internal func lookupExecutable(firstArgument: String?) throws -> URL? {
         guard let firstArgument else { return nil }
 
         // If the first argument is an absolute URL to an executable, return it.

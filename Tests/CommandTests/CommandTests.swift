@@ -12,4 +12,37 @@ final class CommandTests: XCTestCase {
         // Then
         XCTAssertEqual(result, ["foo\n"])
     }
+
+    func test_lookupExecutable_withAbsolutePath() throws {
+        // Given
+        let commandRunner = CommandRunner()
+        let absolutePath = "/bin/echo"
+
+        // When
+        let executableURL = try commandRunner.lookupExecutable(firstArgument: absolutePath)
+
+        // Then
+        XCTAssertEqual(executableURL?.path, absolutePath)
+    }
+
+    func test_lookupExecutable_withRegularCommand() throws {
+        // Given
+        let commandRunner = CommandRunner()
+        let command = "echo"
+
+        // When
+        let executableURL = try commandRunner.lookupExecutable(firstArgument: command)
+
+        // Then
+        XCTAssertNotNil(executableURL)
+        XCTAssertTrue(executableURL?.path.contains("/echo") ?? false)
+    }
+
+    func test_lookupExecutable_withInvalidCommand() throws {
+        // Given
+        let commandRunner = CommandRunner()
+        let command = "nonexistentcommand"
+
+        XCTAssertNil(try commandRunner.lookupExecutable(firstArgument: command))
+    }
 }
