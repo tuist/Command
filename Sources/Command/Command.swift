@@ -100,17 +100,12 @@ public enum CommandEvent: Sendable {
 public enum CommandError: Error, CustomStringConvertible, Sendable {
     case terminated(Int32, stderr: String)
     case signalled(Int32)
-    case errorObtainingExecutable(executable: String, error: String)
     case executableNotFound(String)
 
     public var description: String {
         switch self {
         case let .signalled(code): return "The command terminated after receiving a signal with code \(code)"
         case let .terminated(code, _): return "The command terminated with the code \(code)"
-        case let .errorObtainingExecutable(
-            name,
-            error
-        ): return "There was an error trying to obtain the path to the executable '\(name)': \(error)"
         case let .executableNotFound(name): return "Couldn't locate the executable '\(name)' in the environment."
         }
     }
@@ -179,9 +174,7 @@ public struct CommandRunner: CommandRunning, Sendable {
                     let executable = try lookupExecutable(firstArgument: arguments.first)
                     process.executableURL = executable
 
-                    if let executable {
-                        logger?.debug("Running command: \(executable.absoluteString) \(processArguments.joined(separator: " "))")
-                    }
+                    logger?.debug("Running command: \(executable.absoluteString) \(processArguments.joined(separator: " "))")
 
                     let threadSafeProcess = ThreadSafe(process)
 
@@ -238,8 +231,10 @@ public struct CommandRunner: CommandRunning, Sendable {
         }
     }
 
-    func lookupExecutable(firstArgument: String?) throws -> URL? {
-        guard let firstArgument else { return nil }
+    func lookupExecutable(firstArgument: String?) throws -> URL {
+        guard let firstArgument else {
+            throw CommandError.executableNotFound("(nil)")
+        }
 
         // If the first argument is an absolute URL to an executable, return it.
         if let executablePath = try? Path.AbsolutePath(validating: firstArgument) {
@@ -250,7 +245,7 @@ public struct CommandRunner: CommandRunning, Sendable {
         let arguments: [String]
 
         #if os(Windows)
-            command = "where"
+            command = "C:\\Windows\\System32\\where.exe"
             arguments = [firstArgument]
         #else
             command = "/usr/bin/which"
@@ -265,27 +260,24 @@ public struct CommandRunner: CommandRunning, Sendable {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: command)
         process.arguments = arguments
+        process.environment = ProcessInfo.processInfo.environment
+        process.currentDirectoryURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 
         let pipe = Pipe()
         process.standardOutput = pipe
         process.standardError = pipe
 
-        do {
-            try process.run()
-        } catch {
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            let output = String(data: data, encoding: .utf8) ?? ""
-            throw CommandError.errorObtainingExecutable(executable: firstArgument, error: output)
-        }
-
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        try process.run()
         process.waitUntilExit()
 
-        if let output = String(data: data, encoding: .utf8) {
-            let trimmedOutput = output.trimmingCharacters(in: .whitespacesAndNewlines)
-            return trimmedOutput.isEmpty ? nil : URL(fileURLWithPath: trimmedOutput)
+        guard
+            let data = try pipe.fileHandleForReading.readToEnd(),
+            let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
+            output.isEmpty == false
+        else {
+            throw CommandError.executableNotFound(firstArgument)
         }
 
-        return nil
+        return URL(fileURLWithPath: output)
     }
 }

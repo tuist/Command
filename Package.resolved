@@ -1,13 +1,13 @@
 {
-  "originHash" : "42117a24adae9d77816b090d33a4ef9548125c0f3ef95e49547663ad6064444d",
+  "originHash" : "346525d1087751bbdce931b44a043368833b77cb6295f31ab26d229cb8e18b9a",
   "pins" : [
     {
       "identity" : "path",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/tuist/Path",
       "state" : {
-        "revision" : "4490da629937fc3994f72dd787dcc3f50d6973fe",
-        "version" : "0.3.0"
+        "revision" : "f63466272e0ae49b0ab6228afe39b113c98f350a",
+        "version" : "0.3.2"
       }
     },
     {

@@ -22,7 +22,7 @@ final class CommandTests: XCTestCase {
         let executableURL = try commandRunner.lookupExecutable(firstArgument: absolutePath)
 
         // Then
-        XCTAssertEqual(executableURL?.path, absolutePath)
+        XCTAssertEqual(executableURL.path, absolutePath)
     }
 
     func test_lookupExecutable_withRegularCommand() throws {
@@ -34,8 +34,7 @@ final class CommandTests: XCTestCase {
         let executableURL = try commandRunner.lookupExecutable(firstArgument: command)
 
         // Then
-        XCTAssertNotNil(executableURL)
-        XCTAssertTrue(executableURL!.path.hasSuffix("/\(command)"))
+        XCTAssertTrue(executableURL.path.hasSuffix("/\(command)"))
     }
 
     func test_lookupExecutable_withInvalidCommand() throws {
@@ -43,10 +42,7 @@ final class CommandTests: XCTestCase {
         let commandRunner = CommandRunner()
         let command = "nonexistentcommand"
 
-        // When
-        let executableURL = try commandRunner.lookupExecutable(firstArgument: command)
-
-        // Then
-        XCTAssertNil(executableURL)
+        // When & Then
+        XCTAssertThrowsError(try commandRunner.lookupExecutable(firstArgument: command))
     }
 }
