@@ -233,7 +233,7 @@ public struct CommandRunner: CommandRunning, Sendable {
 
     func lookupExecutable(firstArgument: String?) throws -> URL {
         guard let firstArgument else {
-            throw CommandError.executableNotFound("(nil)")
+            throw CommandError.missingExecutableName
         }
 
         // If the first argument is an absolute URL to an executable, return it.
