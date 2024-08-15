@@ -45,4 +45,12 @@ final class CommandTests: XCTestCase {
         // When & Then
         XCTAssertThrowsError(try commandRunner.lookupExecutable(firstArgument: command))
     }
+
+    func test_lookupExecutable_withMissingExecutableCommand() throws {
+        // Given
+        let commandRunner = CommandRunner()
+
+        // When & Then
+        XCTAssertThrowsError(try commandRunner.lookupExecutable(firstArgument: nil))
+    }
 }
