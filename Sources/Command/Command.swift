@@ -101,12 +101,14 @@ public enum CommandError: Error, CustomStringConvertible, Sendable {
     case terminated(Int32, stderr: String)
     case signalled(Int32)
     case executableNotFound(String)
+    case missingExecutableName
 
     public var description: String {
         switch self {
         case let .signalled(code): return "The command terminated after receiving a signal with code \(code)"
         case let .terminated(code, _): return "The command terminated with the code \(code)"
         case let .executableNotFound(name): return "Couldn't locate the executable '\(name)' in the environment."
+        case .missingExecutableName: return "The executable name is missing."
         }
     }
 }
