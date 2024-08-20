@@ -13,11 +13,14 @@ let project = Project(name: "Command", targets: [
         dependencies: [
             .external(name: "Logging"),
             .external(name: "Path"),
+            .external(name: "Mockable"),
         ],
         settings: .settings(
             base: ["SWIFT_STRICT_CONCURRENCY": "complete"],
             configurations: [
-                .debug(name: .debug, settings: [:]),
+                .debug(name: .debug, settings: [
+                    "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) MOCKING",
+                ]),
                 .release(name: .release, settings: [:]),
             ]
         )

@@ -1,11 +1,13 @@
 import Foundation
 import Logging
+import Mockable
 import Path
 
 /**
  `CommandRunning` is a protocol that declares the interface to run system processes.
  The main implementation of the protocol is `CommandRunner`.
  */
+@Mockable
 public protocol CommandRunning: Sendable {
     /// Runs a command in the system.
     /// - Parameters:
