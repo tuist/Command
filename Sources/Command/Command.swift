@@ -1,8 +1,7 @@
 import Foundation
 import Path
 /// An interface that exposes static functions to invoke system commands.
-public struct Command {
-    
+public enum Command {
     /// Runs a command given its aguments.
     /// The command will inherit the environment variables and working directory from the current process and the process
     /// lifecycle will be bound to the current process'.
@@ -34,7 +33,7 @@ public struct Command {
             workingDirectory: nil
         )
     }
-    
+
     /// Runs a command in the system.
     /// - Parameters:
     ///   - arguments: The command arguments where the first argument represents the executable. If the executable is not an
@@ -51,7 +50,7 @@ public struct Command {
             workingDirectory: workingDirectory
         )
     }
-    
+
     /// Runs a command in the system.
     /// - Parameters:
     ///   - arguments: The command arguments where the first argument represents the executable. If the executable is not an
@@ -65,6 +64,6 @@ public struct Command {
         environment: [String: String],
         workingDirectory: Path.AbsolutePath?
     ) -> AsyncThrowingStream<CommandEvent, any Error> {
-        return CommandRunner().run(arguments: arguments, environment: environment, workingDirectory: workingDirectory)
+        CommandRunner().run(arguments: arguments, environment: environment, workingDirectory: workingDirectory)
     }
 }
