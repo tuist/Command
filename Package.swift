@@ -34,6 +34,7 @@ let package = Package(
         .testTarget(
             name: "CommandTests",
             dependencies: [
+                "MockableTest",
                 "Command",
             ]
         ),

@@ -1,7 +1,9 @@
 import XCTest
+import MockableTest
 @testable import Command
 
-final class CommandTests: XCTestCase {
+final class CommandRunnerTests: XCTestCase {
+    
     func test_runs_successfully() async throws {
         // Given
         let commandRunner = CommandRunner()

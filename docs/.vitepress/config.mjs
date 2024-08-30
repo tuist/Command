@@ -1,12 +1,13 @@
-import { defineConfig } from 'vitepress'
+import { defineConfig } from "vitepress";
+import { quickstartIcon } from "./icons.mjs";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "Command",
   description: "A micro Swift Package for running system processes in Swift",
-  titleTemplate: ':title | Command | Tuist',
+  titleTemplate: ":title | Command | Tuist",
   sitemap: {
-    hostname: 'https://command.tuist.io'
+    hostname: "https://command.tuist.io",
   },
   themeConfig: {
     logo: "/logo.png",
@@ -14,19 +15,20 @@ export default defineConfig({
       provider: "local",
     },
     nav: [
-      { text: "Changelog", link: "https://github.com/tuist/Command/releases" }
+      { text: "Changelog", link: "https://github.com/tuist/Command/releases" },
     ],
     editLink: {
       pattern: "https://github.com/tuist/Command/edit/main/docs/:path",
     },
     sidebar: [
       {
-        text: 'Command',
+        text: `<span style="display: flex; flex-direction: row; align-items: center; gap: 7px;">Quick start ${quickstartIcon()}</span>`,
         items: [
-          { text: 'What is Command?', link: '/guides/what-is-command' },
-          { text: 'Usage', link: '/guides/usage' },
-        ]
-      }
+          { text: "Install", link: "/" },
+          { text: "Run a command", link: "/quick-start/run-a-command" },
+          { text: "Write tests", link: "/quick-start/write-tests" },
+        ],
+      },
     ],
 
     socialLinks: [
@@ -42,5 +44,5 @@ export default defineConfig({
       message: "Released under the MIT License.",
       copyright: "Copyright © 2024-present Tuist Inc.",
     },
-  }
-})
+  },
+});
