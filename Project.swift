@@ -36,6 +36,7 @@ let project = Project(name: "Command", targets: [
         ],
         dependencies: [
             .target(name: "Command"),
+            .external(name: "MockableTest"),
         ]
     ),
 ])

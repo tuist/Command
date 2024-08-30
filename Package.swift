@@ -24,7 +24,7 @@ let package = Package(
             dependencies: [
                 .product(name: "Path", package: "Path"),
                 .product(name: "Logging", package: "swift-log"),
-                .product(name: "Mockable", package: "Mockable"),
+                .product(name: "Mockable", package: "Mockable", condition: .when(platforms: [.macOS])),
             ],
             swiftSettings: [
                 .enableExperimentalFeature("StrictConcurrency"),
@@ -34,6 +34,7 @@ let package = Package(
         .testTarget(
             name: "CommandTests",
             dependencies: [
+                .product(name: "MockableTest", package: "Mockable", condition: .when(platforms: [.macOS])),
                 "Command",
             ]
         ),
