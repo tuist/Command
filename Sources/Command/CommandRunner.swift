@@ -1,13 +1,18 @@
 import Foundation
 import Logging
+// Mockable depends on Combine, which is only available on macOS.
+#if os(macOS)
 import Mockable
+#endif
 import Path
 
 /**
  `CommandRunning` is a protocol that declares the interface to run system processes.
  The main implementation of the protocol is `CommandRunner`.
  */
+#if os(macOS)
 @Mockable
+#endif
 public protocol CommandRunning: Sendable {
     /// Runs a command in the system.
     /// - Parameters:
