@@ -2,7 +2,7 @@ import Foundation
 import Logging
 // Mockable depends on Combine, which is only available on macOS.
 #if os(macOS)
-import Mockable
+    import Mockable
 #endif
 import Path
 
@@ -11,7 +11,7 @@ import Path
  The main implementation of the protocol is `CommandRunner`.
  */
 #if os(macOS)
-@Mockable
+    @Mockable
 #endif
 public protocol CommandRunning: Sendable {
     /// Runs a command in the system.
