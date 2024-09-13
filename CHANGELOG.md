@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.9] - 2024-09-13
+### Details
+#### Chore
+- Update dependency wrangler to v3.77.0 by @renovate[bot] in [#112](https://github.com/tuist/command/pull/112)
+
 ## [0.9.8] - 2024-09-10
 ### Details
 #### Chore
@@ -186,6 +191,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create .all-contributorsrc [skip ci] by @allcontributors[bot]
 - Update README.md [skip ci] by @allcontributors[bot]
 
+[0.9.9]: https://github.com/tuist/command/compare/0.9.8..0.9.9
 [0.9.8]: https://github.com/tuist/command/compare/0.9.7..0.9.8
 [0.9.7]: https://github.com/tuist/command/compare/0.9.6..0.9.7
 [0.9.6]: https://github.com/tuist/command/compare/0.9.5..0.9.6
