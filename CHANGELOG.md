@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.32] - 2024-10-02
+### Details
+#### Chore
+- Update dependency pnpm to v9.12.0 by @renovate[bot] in [#136](https://github.com/tuist/command/pull/136)
+
 ## [0.9.31] - 2024-10-01
 ### Details
 #### Chore
@@ -301,6 +306,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create .all-contributorsrc [skip ci] by @allcontributors[bot]
 - Update README.md [skip ci] by @allcontributors[bot]
 
+[0.9.32]: https://github.com/tuist/command/compare/0.9.31..0.9.32
 [0.9.31]: https://github.com/tuist/command/compare/0.9.30..0.9.31
 [0.9.30]: https://github.com/tuist/command/compare/0.9.29..0.9.30
 [0.9.29]: https://github.com/tuist/command/compare/0.9.28..0.9.29
