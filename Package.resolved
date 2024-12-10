@@ -1,5 +1,5 @@
 {
-  "originHash" : "200d1eaa111ffca8244a8c1f89ae2c31d498101126538b7a0848d53fbc97ad01",
+  "originHash" : "7a136b218ee7e61a27a7b266e1035e0d961ca89a3c56036659d9a2e490754b04",
   "pins" : [
     {
       "identity" : "mockable",
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/tuist/Path",
       "state" : {
-        "revision" : "25b8619f75e3d2141940a64a7b870d893164c352",
-        "version" : "0.3.3"
+        "revision" : "7c74ac435e03a927c3a73134c48b61e60221abcb",
+        "version" : "0.3.8"
       }
     },
     {

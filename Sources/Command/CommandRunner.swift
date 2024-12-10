@@ -175,6 +175,7 @@ public struct CommandRunner: CommandRunning, Sendable {
                     process.currentDirectoryURL = URL(fileURLWithPath: workingDirectory!.pathString)
                     process.standardOutput = stdoutPipe
                     process.standardError = stderrPipe
+                    process.standardInput = FileHandle.standardInput
                     process.environment = environment
 
                     let processArguments = Array(arguments.dropFirst())
