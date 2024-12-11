@@ -34,7 +34,7 @@ let package = Package(
         .testTarget(
             name: "CommandTests",
             dependencies: [
-                .product(name: "MockableTest", package: "Mockable", condition: .when(platforms: [.macOS])),
+                .product(name: "Mockable", package: "Mockable", condition: .when(platforms: [.macOS])),
                 "Command",
             ]
         ),
