@@ -1,6 +1,6 @@
 import ProjectDescription
 
-let config = Config(
+let tuist = Tuist(
     fullHandle: "tuist/command",
     generationOptions: .options(
         optionalAuthentication: true

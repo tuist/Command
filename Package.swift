@@ -16,7 +16,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/tuist/Path", .upToNextMajor(from: "0.3.8")),
         .package(url: "https://github.com/apple/swift-log", .upToNextMajor(from: "1.6.2")),
-        .package(url: "https://github.com/Kolos65/Mockable", .upToNextMajor(from: "0.0.10")),
+        .package(url: "https://github.com/Kolos65/Mockable", .upToNextMajor(from: "0.1.3")),
     ],
     targets: [
         .target(
@@ -34,7 +34,7 @@ let package = Package(
         .testTarget(
             name: "CommandTests",
             dependencies: [
-                .product(name: "MockableTest", package: "Mockable", condition: .when(platforms: [.macOS])),
+                .product(name: "Mockable", package: "Mockable", condition: .when(platforms: [.macOS])),
                 "Command",
             ]
         ),

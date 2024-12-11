@@ -8,17 +8,17 @@ description: Learn how to test business logic that depends on Command.
 
 When writing unit tests, you might want to stub the execution of commands to avoid running them in your tests. To ease that, Command uses the [Mockable](https://github.com/Kolos65/Mockable) macro to provide a mock `MockCommandRunning` when the `MOCKING` Swift active compilation condition is set in your project.
 
-Add `MockableTest` as a dependency of your project, and set the `MOCKING` Swift active compilation condition when the targets compile with the `Debug` configuration.
+Add `Mockable` as a dependency of your project, and set the `MOCKING` Swift active compilation condition when the targets compile with the `Debug` configuration.
 
-Then you can use the mocks and the utilities from `MockableTest` to stub the execution of commands in your tests:
+Then you can use the mocks and the utilities from `Mockable` to stub the execution of commands in your tests:
 
 ```swift
 import XCTest
-import MockableTest
+import Mockable
 import Command
 
 final class MySubjectTests: XCTestCase {
-    
+
     func test_some_logic() async throws {
         // Given
         let commandRunner = MockCommandRunning()
@@ -30,12 +30,12 @@ final class MySubjectTests: XCTestCase {
                 continuation.finish()
             })
         let subject = Subject(commandRunner: commandRunner)
-        
+
         // When
         let got = subject.run()
 
         // Then
-        // ...expectations        
+        // ...expectations
     }
 }
 ```
