@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2024-12-11
+### Details
+#### Chore
+- Update dependency kolos65/mockable to from: "0.1.3" by @renovate[bot] in [#134](https://github.com/tuist/command/pull/134)
+- Update dependency node to v22 by @renovate[bot] in [#144](https://github.com/tuist/command/pull/144)
+- Update dependency pnpm to v9.15.0 by @renovate[bot] in [#141](https://github.com/tuist/command/pull/141)
+- Update dependency wrangler to v3.95.0 by @renovate[bot] in [#139](https://github.com/tuist/command/pull/139)
+- Update dependency apple/swift-log to from: "1.6.2" by @renovate[bot] in [#145](https://github.com/tuist/command/pull/145)
+- Update dependency tuist to v4.36.0 by @renovate[bot] in [#137](https://github.com/tuist/command/pull/137)
+- Update dependency node to v20.18.1 by @renovate[bot] in [#138](https://github.com/tuist/command/pull/138)
+- Update actions/checkout digest to 11bd719 by @renovate[bot] in [#143](https://github.com/tuist/command/pull/143)
+- Lock file maintenance by @renovate[bot] in [#140](https://github.com/tuist/command/pull/140)
+
+#### Feat
+- Default to inheriting the standard input from the current process by @pepicrft in [#146](https://github.com/tuist/command/pull/146)
+
 ## [0.9.32] - 2024-10-02
 ### Details
 #### Chore
@@ -306,6 +322,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create .all-contributorsrc [skip ci] by @allcontributors[bot]
 - Update README.md [skip ci] by @allcontributors[bot]
 
+[0.10.0]: https://github.com/tuist/command/compare/0.9.32..0.10.0
 [0.9.32]: https://github.com/tuist/command/compare/0.9.31..0.9.32
 [0.9.31]: https://github.com/tuist/command/compare/0.9.30..0.9.31
 [0.9.30]: https://github.com/tuist/command/compare/0.9.29..0.9.30
