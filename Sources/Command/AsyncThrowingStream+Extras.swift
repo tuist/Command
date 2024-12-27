@@ -14,4 +14,38 @@ extension AsyncThrowingStream where Element == CommandEvent {
             }
         }
     }
+
+    /// Returns a new AsyncThrowingStream that pipes the standard output and standard error through the process' standard output
+    /// and error.
+    public func pipedStream() -> AsyncThrowingStream<Element, Error> {
+        AsyncThrowingStream<Element, Error> { continuation in
+            Task {
+                do {
+                    for try await event in self {
+                        switch event.pipeline {
+                        case .standardOutput:
+                            if let output = event.string(encoding: .utf8) {
+                                FileHandle.standardOutput.write(Data(output.utf8))
+                            }
+                        case .standardError:
+                            if let errorOutput = event.string(encoding: .utf8) {
+                                FileHandle.standardError.write(Data(errorOutput.utf8))
+                            }
+                        }
+                        continuation.yield(event)
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+        }
+    }
+
+    /// Awaits for the completion of the stream.
+    public func awaitCompletion() async throws {
+        for try await _ in self {
+            // Do nothing, just consume the stream
+        }
+    }
 }

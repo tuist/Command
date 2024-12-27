@@ -1,18 +1,25 @@
 import Command
 import Foundation
-import XCTest
+import Testing
 
-public final class AsyncThrowingStreamExtrasTests: XCTestCase {
-    func test_concatenatedString_returnsTheConcatenatedString() async throws {
-        // Given
-        let commandRunner = CommandRunner()
+struct AsyncThrowingStreamExtrasTests {
+    let subject = CommandRunner()
 
+    @Test func concatenatedString_returnsTheConcatenatedString() async throws {
         // When
-        let result = try await commandRunner
+        let result = try await subject
             .run(arguments: ["echo", "foo"])
             .concatenatedString().trimmingCharacters(in: .whitespacesAndNewlines)
 
         // Then
-        XCTAssertEqual(result, "foo")
+        #expect(result == "foo")
+    }
+
+    @Test func awaiting_of_piped_stream() async throws {
+        // When
+        try await subject
+            .run(arguments: ["echo", "foo"])
+            .pipedStream()
+            .awaitCompletion()
     }
 }
