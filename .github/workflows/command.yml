@@ -8,6 +8,7 @@ on:
 
 env:
   TUIST_CONFIG_TOKEN: ${{ secrets.TUIST_CONFIG_CLOUD_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
 concurrency:
   group: command-${{ github.head_ref }}
@@ -19,12 +20,13 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-15]
         swift: ["5.10"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: SwiftyLab/setup-swift@latest
+        if: runner.os == 'Linux'
         with:
           swift-version: ${{ matrix.swift }}
       - uses: jdx/mise-action@v2
@@ -41,11 +43,9 @@ jobs:
   build_tuist:
     name: "Tuist build"
     timeout-minutes: 10
-    runs-on: "macos-latest"
+    runs-on: "macos-15"
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode
-        run: sudo xcode-select -switch /Applications/Xcode_$(cat .xcode-version).app
       - uses: jdx/mise-action@v2
         with:
           experimental: true
@@ -59,16 +59,11 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        os: [macos-latest]
+        os: [macos-15]
         swift: ["5.10"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode
-        run: sudo xcode-select -switch /Applications/Xcode_$(cat .xcode-version).app
-      - uses: SwiftyLab/setup-swift@latest
-        with:
-          swift-version: ${{ matrix.swift }}
       - uses: jdx/mise-action@v2
         if: runner.os == 'Linux' || runner.os == 'macOS'
         with:
@@ -83,13 +78,11 @@ jobs:
   test_tuist:
     name: "Tuist test"
     timeout-minutes: 10
-    runs-on: "macos-latest"
+    runs-on: "macos-15"
     env:
       TUIST_CONFIG_TOKEN: ${{ secrets.TUIST_CONFIG_CLOUD_TOKEN }}
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode
-        run: sudo xcode-select -switch /Applications/Xcode_$(cat .xcode-version).app
       - uses: jdx/mise-action@v2
         with:
           experimental: true
@@ -101,7 +94,7 @@ jobs:
   lint:
     name: Lint
     timeout-minutes: 10
-    runs-on: macos-latest
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v2
