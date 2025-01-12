@@ -153,6 +153,9 @@ public struct CommandRunner: CommandRunning, Sendable {
                         do {
                             for try await data in stdoutPipe.fileHandleForReading.byteStream() {
                                 continuation.yield(.standardOutput([UInt8](data)))
+                                if let output = String(data: data, encoding: .utf8) {
+                                    logger?.error("\(output)")
+                                }
                             }
                         } catch {
                             logger?.error("Error reading stdout: \(error)")
@@ -165,6 +168,7 @@ public struct CommandRunner: CommandRunning, Sendable {
                                 continuation.yield(.standardError([UInt8](data)))
                                 if let output = String(data: data, encoding: .utf8) {
                                     collectedStdErr.mutate { $0.append(output) }
+                                    logger?.error("\(output)")
                                 }
                             }
                         } catch {
