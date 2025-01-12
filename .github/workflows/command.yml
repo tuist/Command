@@ -9,7 +9,7 @@ on:
 env:
   TUIST_CONFIG_TOKEN: ${{ secrets.TUIST_CONFIG_CLOUD_TOKEN }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  
+
 concurrency:
   group: command-${{ github.head_ref }}
   cancel-in-progress: true
@@ -51,7 +51,7 @@ jobs:
           experimental: true
       - name: Run
         run: |
-          mise x -- tuist install
+          mise run install
           mise run build
 
   test:
@@ -88,7 +88,7 @@ jobs:
           experimental: true
       - name: Run
         run: |
-          mise x -- tuist install
+          mise run install
           mise run test
 
   lint:
