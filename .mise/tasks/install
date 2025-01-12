@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 #mise description="Install the project dependencies"
 
-mise install --path $MISE_PROJECT_ROOT
+tuist install --path $MISE_PROJECT_ROOT
