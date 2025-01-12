@@ -3,6 +3,16 @@
 
 import PackageDescription
 
+#if TUIST
+    import ProjectDescription
+
+    let packageSettings = PackageSettings(productDestinations: [
+        "Path": .macOS,
+        "Mockable": .macOS,
+        "Logging": .macOS,
+    ])
+#endif
+
 let package = Package(
     name: "Command",
     platforms: [.macOS("13.0")],
