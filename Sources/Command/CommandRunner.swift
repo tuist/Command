@@ -156,6 +156,9 @@ public struct CommandRunner: CommandRunning, Sendable {
                         if data.count > 0 {
                             stdoutQueue.async {
                                 continuation.yield(.standardOutput([UInt8](data)))
+                                if let output = String(data: data, encoding: .utf8) {
+                                    logger?.error("\(output)")
+                                }
                             }
                         }
                     }
@@ -167,6 +170,7 @@ public struct CommandRunner: CommandRunning, Sendable {
                                 continuation.yield(.standardError([UInt8](data)))
                                 if let output = String(data: data, encoding: .utf8) {
                                     collectedStdErr.mutate { $0.append(output) }
+                                    logger?.error("\(output)")
                                 }
                             }
                         }
