@@ -133,7 +133,7 @@ public struct CommandRunner: CommandRunning, Sendable {
         workingDirectory: Path.AbsolutePath? = nil
     ) -> AsyncThrowingStream<CommandEvent, any Error> {
         AsyncThrowingStream(CommandEvent.self, bufferingPolicy: .unbounded) { continuation in
-            DispatchQueue(label: "io.tuist.command", attributes: .concurrent).async {
+            Task.detached {
                 do {
                     // Get the working directory if not passed.
                     var workingDirectory = workingDirectory
@@ -148,27 +148,27 @@ public struct CommandRunner: CommandRunning, Sendable {
                     let process = Process()
                     let stdoutPipe = Pipe()
                     let stderrPipe = Pipe()
-                    let stdoutQueue = DispatchQueue(label: "io.tuist.Command.stdoutQueue")
-                    let stderrQueue = DispatchQueue(label: "io.tuist.Command.stderrQueue")
 
-                    stdoutPipe.fileHandleForReading.readabilityHandler = { handle in
-                        let data = handle.availableData
-                        if data.count > 0 {
-                            stdoutQueue.async {
+                    let stdoutTask = Task {
+                        do {
+                            for try await data in stdoutPipe.fileHandleForReading.byteStream() {
                                 continuation.yield(.standardOutput([UInt8](data)))
                             }
+                        } catch {
+                            logger?.error("Error reading stdout: \(error)")
                         }
                     }
 
-                    stderrPipe.fileHandleForReading.readabilityHandler = { handle in
-                        let data = handle.availableData
-                        if data.count > 0 {
-                            stderrQueue.async {
+                    let stderrTask = Task {
+                        do {
+                            for try await data in stderrPipe.fileHandleForReading.byteStream() {
                                 continuation.yield(.standardError([UInt8](data)))
                                 if let output = String(data: data, encoding: .utf8) {
                                     collectedStdErr.mutate { $0.append(output) }
                                 }
                             }
+                        } catch {
+                            logger?.error("Error reading stderr: \(error)")
                         }
                     }
 
@@ -202,24 +202,11 @@ public struct CommandRunner: CommandRunning, Sendable {
                     try process.run()
                     process.waitUntilExit()
 
-                    // Read remaining data from stdout and stderr
-                    stdoutQueue.sync {
-                        if let data = try? stdoutPipe.fileHandleForReading.readToEnd(), data.count > 0 {
-                            continuation.yield(.standardOutput([UInt8](data)))
-                        }
-                    }
+                    await stdoutTask.value
+                    await stderrTask.value
 
-                    stderrQueue.sync {
-                        if let data = try? stderrPipe.fileHandleForReading.readToEnd(), data.count > 0 {
-                            continuation.yield(.standardError([UInt8](data)))
-                            if let output = String(data: data, encoding: .utf8) {
-                                collectedStdErr.mutate { $0.append(output) }
-                            }
-                        }
-                    }
-
-                    stdoutPipe.fileHandleForReading.readabilityHandler = nil
-                    stderrPipe.fileHandleForReading.readabilityHandler = nil
+                    try? stdoutPipe.fileHandleForReading.close()
+                    try? stderrPipe.fileHandleForReading.close()
 
                     switch process.terminationReason {
                     case .exit:
