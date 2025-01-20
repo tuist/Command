@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.15] - 2025-01-20
+### Details
+#### Chore
+- Update dependency vitepress to v1.6.0 by @renovate[bot] in [#174](https://github.com/tuist/command/pull/174)
+
 ## [0.11.14] - 2025-01-20
 ### Details
 #### Chore
@@ -423,6 +428,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create .all-contributorsrc [skip ci] by @allcontributors[bot]
 - Update README.md [skip ci] by @allcontributors[bot]
 
+[0.11.15]: https://github.com/tuist/command/compare/0.11.14..0.11.15
 [0.11.14]: https://github.com/tuist/command/compare/0.11.13..0.11.14
 [0.11.13]: https://github.com/tuist/command/compare/0.11.12..0.11.13
 [0.11.12]: https://github.com/tuist/command/compare/0.11.11..0.11.12
