@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.17] - 2025-01-21
+### Details
+#### Chore
+- Update dependency node to v22.13.1 by @renovate[bot] in [#176](https://github.com/tuist/command/pull/176)
+
 ## [0.11.16] - 2025-01-21
 ### Details
 #### Chore
@@ -433,6 +438,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create .all-contributorsrc [skip ci] by @allcontributors[bot]
 - Update README.md [skip ci] by @allcontributors[bot]
 
+[0.11.17]: https://github.com/tuist/command/compare/0.11.16..0.11.17
 [0.11.16]: https://github.com/tuist/command/compare/0.11.15..0.11.16
 [0.11.15]: https://github.com/tuist/command/compare/0.11.14..0.11.15
 [0.11.14]: https://github.com/tuist/command/compare/0.11.13..0.11.14
