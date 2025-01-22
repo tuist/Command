@@ -135,6 +135,7 @@ public struct CommandRunner: CommandRunning, Sendable {
         AsyncThrowingStream(CommandEvent.self, bufferingPolicy: .unbounded) { continuation in
             Task.detached {
                 do {
+                    let loggerMetadata: Logger.Metadata = ["command": .string(arguments.joined(separator: " "))]
                     // Get the working directory if not passed.
                     var workingDirectory = workingDirectory
                     if workingDirectory == nil {
@@ -154,11 +155,11 @@ public struct CommandRunner: CommandRunning, Sendable {
                             for try await data in stdoutPipe.fileHandleForReading.byteStream() {
                                 continuation.yield(.standardOutput([UInt8](data)))
                                 if let output = String(data: data, encoding: .utf8) {
-                                    logger?.error("\(output)")
+                                    logger?.debug("\(output)", metadata: loggerMetadata)
                                 }
                             }
                         } catch {
-                            logger?.error("Error reading stdout: \(error)")
+                            logger?.error("Error reading stdout: \(error)", metadata: loggerMetadata)
                         }
                     }
 
@@ -168,11 +169,11 @@ public struct CommandRunner: CommandRunning, Sendable {
                                 continuation.yield(.standardError([UInt8](data)))
                                 if let output = String(data: data, encoding: .utf8) {
                                     collectedStdErr.mutate { $0.append(output) }
-                                    logger?.error("\(output)")
+                                    logger?.error("\(output)", metadata: loggerMetadata)
                                 }
                             }
                         } catch {
-                            logger?.error("Error reading stderr: \(error)")
+                            logger?.error("Error reading stderr: \(error)", metadata: loggerMetadata)
                         }
                     }
 
@@ -188,7 +189,7 @@ public struct CommandRunner: CommandRunning, Sendable {
                     let executable = try lookupExecutable(firstArgument: arguments.first)
                     process.executableURL = executable
 
-                    logger?.debug("Running command: \(executable.absoluteString) \(processArguments.joined(separator: " "))")
+                    logger?.debug("Running sub-process", metadata: loggerMetadata)
 
                     let threadSafeProcess = ThreadSafe(process)
 
@@ -253,8 +254,7 @@ public struct CommandRunner: CommandRunning, Sendable {
             arguments = [firstArgument]
         #endif
 
-        logger?.log(
-            level: .debug,
+        logger?.debug(
             "Looking up executable \(firstArgument) by running: \(command) \(arguments.joined(separator: " "))"
         )
 
