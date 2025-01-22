@@ -8,7 +8,13 @@ final class CommandRunnerTests: XCTestCase {
         let commandRunner = CommandRunner()
 
         // When
-        let result = try await commandRunner.run(arguments: ["echo", "foo"]).reduce(into: [String]()) { $0.append($1.string()) }
+        #if os(Windows)
+            let result = try await commandRunner.run(arguments: ["cmd.exe", "/c", "echo", "foo"])
+                .reduce(into: [String]()) { $0.append($1.string()) }
+        #else
+            let result = try await commandRunner.run(arguments: ["echo", "foo"])
+                .reduce(into: [String]()) { $0.append($1.string()) }
+        #endif
 
         // Then
         XCTAssertEqual(result, ["foo\n"])
@@ -17,7 +23,11 @@ final class CommandRunnerTests: XCTestCase {
     func test_lookupExecutable_withAbsolutePath() throws {
         // Given
         let commandRunner = CommandRunner()
-        let absolutePath = "/bin/echo"
+        #if os(Windows)
+            let absolutePath = "C:\\Windows\\System32\\cmd.exe"
+        #else
+            let absolutePath = "/bin/echo"
+        #endif
 
         // When
         let executableURL = try commandRunner.lookupExecutable(firstArgument: absolutePath)
@@ -29,7 +39,11 @@ final class CommandRunnerTests: XCTestCase {
     func test_lookupExecutable_withRegularCommand() throws {
         // Given
         let commandRunner = CommandRunner()
-        let command = "echo"
+        #if os(Windows)
+            let command = "cmd.exe"
+        #else
+            let command = "echo"
+        #endif
 
         // When
         let executableURL = try commandRunner.lookupExecutable(firstArgument: command)

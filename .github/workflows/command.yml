@@ -59,7 +59,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        os: [macos-15]
+        os: [macos-15, ubuntu-latest, windows-latest]
         swift: ["5.10"]
     runs-on: ${{ matrix.os }}
     steps:
