@@ -1,9 +1,9 @@
 import Mockable
-import XCTest
+import Testing
 @testable import Command
 
-final class CommandRunnerRaceTests: XCTestCase {
-    func test_runsManyConcurrent_successful() async throws {
+struct CommandRunnerRaceTests {
+    @Test func runsManyConcurrent_successfully() async throws {
         let commandRunner = CommandRunner()
 
         try await withThrowingTaskGroup(of: String.self) { group in
@@ -16,7 +16,7 @@ final class CommandRunnerRaceTests: XCTestCase {
             }
 
             for try await result in group {
-                XCTAssertEqual(result, "test\n")
+                #expect(result == "test\n")
             }
         }
     }
