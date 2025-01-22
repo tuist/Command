@@ -12,7 +12,7 @@ extension FileHandle {
                     continuation.yield(data)
                 }
             }
-            
+
             continuation.onTermination = { @Sendable _ in
                 self.readabilityHandler = nil
             }

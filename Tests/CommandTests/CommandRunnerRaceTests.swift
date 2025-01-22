@@ -6,10 +6,10 @@ final class CommandRunnerRaceTests: XCTestCase {
     func test_runsManyConcurrent_successful() async throws {
         let commandRunner = CommandRunner()
 
-        try await withThrowingTaskGroup(of: String.self) { group in    
-            for _ in 0..<1000 {
+        try await withThrowingTaskGroup(of: String.self) { group in
+            for _ in 0 ..< 1000 {
                 group.addTask {
-                    return try await commandRunner
+                    try await commandRunner
                         .run(arguments: ["echo", "test"])
                         .reduce("") { $0 + ($1.string() ?? "") }
                 }
