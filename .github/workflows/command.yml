@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-15]
-        swift: ["5.10"]
+        swift: ["6.0"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -60,7 +60,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-15, ubuntu-latest, windows-latest]
-        swift: ["5.10"]
+        swift: ["6.0"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
