@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] - 2025-01-22
+### Details
+#### Features
+- Log standard output and error messages through the logger by @pepicrft in [#165](https://github.com/tuist/command/pull/165)
+
 ## [0.11.19] - 2025-01-22
 ### Details
 #### Bug Fixes
@@ -87,6 +92,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create .all-contributorsrc [skip ci] by @allcontributors[bot]
 - Update README.md [skip ci] by @allcontributors[bot]
 
+[0.12.0]: https://github.com/tuist/command/compare/0.11.19..0.12.0
 [0.11.19]: https://github.com/tuist/command/compare/0.11.18..0.11.19
 [0.11.18]: https://github.com/tuist/command/compare/0.11.17..0.11.18
 [0.11.0]: https://github.com/tuist/command/compare/0.10.5..0.11.0
