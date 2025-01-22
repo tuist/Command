@@ -127,6 +127,7 @@ public struct CommandRunner: CommandRunning, Sendable {
         self.logger = logger
     }
 
+    // swiftlint:disable:next function_body_length
     public func run(
         arguments: [String],
         environment: [String: String] = ProcessInfo.processInfo.environment,
