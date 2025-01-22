@@ -1,6 +1,6 @@
 # Command
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ftuist%2FCommand%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/tuist/Command)
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ftuist%2FCommand%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/tuist/Command)
@@ -43,6 +43,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="http://natanrolnik.me"><img src="https://avatars.githubusercontent.com/u/1164565?v=4?s=100" width="100px;" alt="Natan Rolnik"/><br /><sub><b>Natan Rolnik</b></sub></a><br /><a href="https://github.com/tuist/Command/commits?author=natanrolnik" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://abarba.me"><img src="https://avatars.githubusercontent.com/u/1316152?v=4?s=100" width="100px;" alt="Andrew Barba"/><br /><sub><b>Andrew Barba</b></sub></a><br /><a href="https://github.com/tuist/Command/commits?author=AndrewBarba" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://danpalmer.me"><img src="https://avatars.githubusercontent.com/u/202400?v=4?s=100" width="100px;" alt="Dan Palmer"/><br /><sub><b>Dan Palmer</b></sub></a><br /><a href="https://github.com/tuist/Command/commits?author=danpalmer" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
