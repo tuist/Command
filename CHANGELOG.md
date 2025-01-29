@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.1] - 2025-01-29
+### Details
+#### Chore
+- Update dependency kolos65/mockable to from: "0.3.0" by @renovate[bot] in [#187](https://github.com/tuist/command/pull/187)
+
 ## [0.12.0] - 2025-01-22
 ### Details
 #### Features
@@ -92,6 +97,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create .all-contributorsrc [skip ci] by @allcontributors[bot]
 - Update README.md [skip ci] by @allcontributors[bot]
 
+[0.12.1]: https://github.com/tuist/command/compare/0.12.0..0.12.1
 [0.12.0]: https://github.com/tuist/command/compare/0.11.19..0.12.0
 [0.11.19]: https://github.com/tuist/command/compare/0.11.18..0.11.19
 [0.11.18]: https://github.com/tuist/command/compare/0.11.17..0.11.18
