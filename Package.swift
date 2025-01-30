@@ -21,7 +21,7 @@ let package = Package(
             name: "Command",
             type: .static,
             targets: ["Command"]
-        )
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/tuist/Path", .upToNextMajor(from: "0.3.8")),
@@ -36,7 +36,8 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
                 .product(
                     name: "Mockable", package: "Mockable",
-                    condition: .when(platforms: [.macOS, .linux, .windows])),
+                    condition: .when(platforms: [.macOS, .linux, .windows])
+                ),
             ],
             swiftSettings: [
                 .enableExperimentalFeature("StrictConcurrency"),
@@ -48,7 +49,8 @@ let package = Package(
             dependencies: [
                 .product(
                     name: "Mockable", package: "Mockable",
-                    condition: .when(platforms: [.macOS, .linux, .windows])),
+                    condition: .when(platforms: [.macOS, .linux, .windows])
+                ),
                 "Command",
             ]
         ),
