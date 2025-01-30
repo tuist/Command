@@ -272,6 +272,11 @@ public struct CommandRunner: CommandRunning, Sendable {
         try process.run()
         process.waitUntilExit()
 
+        // Check the exit code
+        guard process.terminationStatus == 0 else {
+            throw CommandError.executableNotFound(firstArgument)
+        }
+
         let data = try pipe.fileHandleForReading.readToEnd()
         let output = String(data: data ?? .init(), encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
 
