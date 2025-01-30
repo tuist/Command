@@ -1,4 +1,4 @@
-// swift-tools-version: 5.10
+// swift-tools-version: 6.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -21,7 +21,7 @@ let package = Package(
             name: "Command",
             type: .static,
             targets: ["Command"]
-        ),
+        )
     ],
     dependencies: [
         .package(url: "https://github.com/tuist/Path", .upToNextMajor(from: "0.3.8")),
@@ -34,7 +34,9 @@ let package = Package(
             dependencies: [
                 .product(name: "Path", package: "Path"),
                 .product(name: "Logging", package: "swift-log"),
-                .product(name: "Mockable", package: "Mockable", condition: .when(platforms: [.macOS])),
+                .product(
+                    name: "Mockable", package: "Mockable",
+                    condition: .when(platforms: [.macOS, .linux, .windows])),
             ],
             swiftSettings: [
                 .enableExperimentalFeature("StrictConcurrency"),
@@ -44,7 +46,9 @@ let package = Package(
         .testTarget(
             name: "CommandTests",
             dependencies: [
-                .product(name: "Mockable", package: "Mockable", condition: .when(platforms: [.macOS])),
+                .product(
+                    name: "Mockable", package: "Mockable",
+                    condition: .when(platforms: [.macOS, .linux, .windows])),
                 "Command",
             ]
         ),
