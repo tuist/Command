@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.2] - 2025-02-14
+### Details
+#### Miscellaneous Tasks
+- Update dependencies with security vulnerabilities by @pepicrft in [#201](https://github.com/tuist/command/pull/201)
+
 ## [0.12.1] - 2025-01-29
 ### Details
 #### Chore
@@ -97,6 +102,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create .all-contributorsrc [skip ci] by @allcontributors[bot]
 - Update README.md [skip ci] by @allcontributors[bot]
 
+[0.12.2]: https://github.com/tuist/command/compare/0.12.1..0.12.2
 [0.12.1]: https://github.com/tuist/command/compare/0.12.0..0.12.1
 [0.12.0]: https://github.com/tuist/command/compare/0.11.19..0.12.0
 [0.11.19]: https://github.com/tuist/command/compare/0.11.18..0.11.19
