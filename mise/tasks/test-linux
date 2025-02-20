@@ -1,0 +1,17 @@
+#!/bin/bash
+# mise description="Builds the project using Swift Package Manager in Linux"
+set -euo pipefail
+
+# Check if podman is available, otherwise fallback to docker
+if command -v podman &> /dev/null; then
+    CONTAINER_ENGINE="podman"
+else
+    CONTAINER_ENGINE="docker"
+fi
+
+$CONTAINER_ENGINE run --rm \
+    --volume "$MISE_PROJECT_ROOT:/package" \
+    --workdir "/package" \
+    swift:6.0.3-bookworm \
+    /bin/bash -c \
+    "swift test --build-path ./.build/linux"

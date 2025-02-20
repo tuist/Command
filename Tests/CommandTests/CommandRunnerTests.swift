@@ -1,9 +1,9 @@
 import Mockable
-import XCTest
+import Testing
 @testable import Command
 
-final class CommandRunnerTests: XCTestCase {
-    func test_runs_successfully() async throws {
+struct CommandRunnerTests {
+    @Test func runs_successfully() async throws {
         // Given
         let commandRunner = CommandRunner()
 
@@ -12,16 +12,16 @@ final class CommandRunnerTests: XCTestCase {
             let result = try await commandRunner.run(arguments: ["cmd.exe", "/c", "echo", "foo"])
                 .reduce(into: [String]()) { $0.append($1.string()) }
             // Then
-            XCTAssertEqual(result, ["foo\r\n"])
+            #expect(result == ["foo\r\n"])
         #else
             let result = try await commandRunner.run(arguments: ["echo", "foo"])
                 .reduce(into: [String]()) { $0.append($1.string()) }
             // Then
-            XCTAssertEqual(result, ["foo\n"])
+            #expect(result == ["foo\n"])
         #endif
     }
 
-    func test_lookupExecutable_withAbsolutePath() throws {
+    @Test func lookupExecutable_withAbsolutePath() throws {
         // Given
         let commandRunner = CommandRunner()
         #if os(Windows)
@@ -34,10 +34,10 @@ final class CommandRunnerTests: XCTestCase {
         let executableURL = try commandRunner.lookupExecutable(firstArgument: absolutePath)
 
         // Then
-        XCTAssertEqual(executableURL.path, absolutePath)
+        #expect(executableURL.path == absolutePath)
     }
 
-    func test_lookupExecutable_withRegularCommand() throws {
+    @Test func lookupExecutable_withRegularCommand() throws {
         // Given
         let commandRunner = CommandRunner()
         #if os(Windows)
@@ -50,23 +50,23 @@ final class CommandRunnerTests: XCTestCase {
         let executableURL = try commandRunner.lookupExecutable(firstArgument: command)
 
         // Then
-        XCTAssertTrue(executableURL.path.hasSuffix("/\(command)"))
+        #expect(executableURL.path.hasSuffix("/\(command)") == true)
     }
 
-    func test_lookupExecutable_withInvalidCommand() throws {
+    @Test func lookupExecutable_withInvalidCommand() throws {
         // Given
         let commandRunner = CommandRunner()
         let command = "nonexistentcommand"
 
         // When & Then
-        XCTAssertThrowsError(try commandRunner.lookupExecutable(firstArgument: command))
+        #expect(throws: (any Error).self, performing: { try commandRunner.lookupExecutable(firstArgument: command) })
     }
 
-    func test_lookupExecutable_withMissingExecutableCommand() throws {
+    @Test func lookupExecutable_withMissingExecutableCommand() throws {
         // Given
         let commandRunner = CommandRunner()
 
         // When & Then
-        XCTAssertThrowsError(try commandRunner.lookupExecutable(firstArgument: nil))
+        #expect(throws: (any Error).self, performing: { try commandRunner.lookupExecutable(firstArgument: nil) })
     }
 }
