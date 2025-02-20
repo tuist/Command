@@ -1,5 +1,6 @@
 import Foundation
 import Path
+
 /// An interface that exposes static functions to invoke system commands.
 public enum Command {
     /// Runs a command given its aguments.

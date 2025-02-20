@@ -2,7 +2,7 @@ import Foundation
 
 /// Type that ensures thread-safe access to the underlying value using DispatchQueue.
 public final class ThreadSafe<T>: @unchecked Sendable {
-    private let queue = DispatchQueue(label: "io.tuist.Command.ThreadSafe", attributes: .concurrent)
+    private let queue = DispatchQueue(label: "dev.tuist.Command.ThreadSafe", attributes: .concurrent)
     private var _value: T
 
     /// Returns the value boxed by `ThreadSafe`
