@@ -160,7 +160,7 @@ public struct CommandRunner: CommandRunning, Sendable {
                                 if debugLogAsUTF8 {
                                     logger?.debug({
                                         if let output = String(data: data, encoding: .utf8) {
-                                            return output
+                                            return "\(output)"
                                         } else {
                                             return "\(data)"
                                         }
@@ -180,7 +180,7 @@ public struct CommandRunner: CommandRunning, Sendable {
                                 if debugLogAsUTF8 {
                                     logger?.debug({
                                         if let output = String(data: data, encoding: .utf8) {
-                                            return output
+                                            return "\(output)"
                                         } else {
                                             return "\(data)"
                                         }
