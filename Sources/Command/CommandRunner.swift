@@ -122,9 +122,11 @@ public enum CommandError: Error, CustomStringConvertible, Sendable {
 
 public struct CommandRunner: CommandRunning, Sendable {
     let logger: Logger?
+    let debugLogAsUTF8: Bool
 
-    public init(logger: Logger? = nil) {
+    public init(logger: Logger? = nil, debugLogAsUTF8: Bool = false) {
         self.logger = logger
+        self.debugLogAsUTF8 = debugLogAsUTF8
     }
 
     // swiftlint:disable:next function_body_length
@@ -144,7 +146,7 @@ public struct CommandRunner: CommandRunning, Sendable {
                         workingDirectory = try! .init(validating: FileManager.default.currentDirectoryPath)
                     }
 
-                    let collectedStdErr: ThreadSafe<String> = ThreadSafe("")
+                    let collectedStdErr: ThreadSafe<Data> = ThreadSafe(.init())
 
                     // Process
                     let process = Process()
@@ -155,8 +157,14 @@ public struct CommandRunner: CommandRunning, Sendable {
                         do {
                             for try await data in stdoutPipe.fileHandleForReading.byteStream() {
                                 continuation.yield(.standardOutput([UInt8](data)))
-                                if let output = String(data: data, encoding: .utf8) {
-                                    logger?.debug("\(output)", metadata: loggerMetadata)
+                                if debugLogAsUTF8 {
+                                    logger?.debug({
+                                        if let output = String(data: data, encoding: .utf8) {
+                                            return output
+                                        } else {
+                                            return "\(data)"
+                                        }
+                                    }, metadata: loggerMetadata)
                                 }
                             }
                         } catch {
@@ -168,9 +176,15 @@ public struct CommandRunner: CommandRunning, Sendable {
                         do {
                             for try await data in stderrPipe.fileHandleForReading.byteStream() {
                                 continuation.yield(.standardError([UInt8](data)))
-                                if let output = String(data: data, encoding: .utf8) {
-                                    collectedStdErr.mutate { $0.append(output) }
-                                    logger?.error("\(output)", metadata: loggerMetadata)
+                                collectedStdErr.mutate { $0.append(data) }
+                                if debugLogAsUTF8 {
+                                    logger?.debug({
+                                        if let output = String(data: data, encoding: .utf8) {
+                                            return output
+                                        } else {
+                                            return "\(data)"
+                                        }
+                                    }, metadata: loggerMetadata)
                                 }
                             }
                         } catch {
@@ -217,7 +231,8 @@ public struct CommandRunner: CommandRunning, Sendable {
                     switch process.terminationReason {
                     case .exit:
                         if process.terminationStatus != 0 {
-                            throw CommandError.terminated(process.terminationStatus, stderr: collectedStdErr.value)
+                            let stderr = String(data: collectedStdErr.value, encoding: .utf8) ?? "Failed to decode stderr"
+                            throw CommandError.terminated(process.terminationStatus, stderr: stderr)
                         }
                     case .uncaughtSignal:
                         if process.terminationStatus != 0 {
