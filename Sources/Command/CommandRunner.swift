@@ -164,7 +164,7 @@ public struct CommandRunner: CommandRunning, Sendable {
                                         } else {
                                             return "\(data)"
                                         }
-                                    }, metadata: loggerMetadata)
+                                    }(), metadata: loggerMetadata)
                                 }
                             }
                         } catch {
@@ -184,7 +184,7 @@ public struct CommandRunner: CommandRunning, Sendable {
                                         } else {
                                             return "\(data)"
                                         }
-                                    }, metadata: loggerMetadata)
+                                    }(), metadata: loggerMetadata)
                                 }
                             }
                         } catch {
