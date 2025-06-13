@@ -4,7 +4,7 @@
   "devDependencies": {
     "vitepress": "^1.1.0",
     "wrangler": "^3.50.0",
-    "esbuild": "0.25.0",
+    "esbuild": "0.25.5",
     "cookie": ">=0.7.0"
   },
   "scripts": {
