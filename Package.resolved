@@ -1,13 +1,13 @@
 {
-  "originHash" : "f1fc80b3d7650cd8397da2a1bcdb1d8a18f490c7e340c77ecc30177e78398a39",
+  "originHash" : "025de0157ef695d0bd79299c2a1445a9f3c43b1468f91699f1822ab67be5be7a",
   "pins" : [
     {
       "identity" : "mockable",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Kolos65/Mockable",
       "state" : {
-        "revision" : "203336d0ccb7ff03a8a03db54a4fa18fc2b0c771",
-        "version" : "0.3.0"
+        "revision" : "92523c3c0623402e9600dcf99f63603f52a889d8",
+        "version" : "0.6.1"
       }
     },
     {
@@ -42,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",
       "state" : {
-        "revision" : "a3f634d1a409c7979cabc0a71b3f26ffa9fc8af1",
-        "version" : "1.4.3"
+        "revision" : "dfd70507def84cb5fb821278448a262c6ff2bbad",
+        "version" : "1.9.0"
       }
     }
   ],
