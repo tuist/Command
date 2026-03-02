@@ -105,15 +105,17 @@ public enum CommandEvent: Sendable {
 }
 
 public enum CommandError: Error, CustomStringConvertible, Sendable {
-    case terminated(Int32, stderr: String)
-    case signalled(Int32)
+    case terminated(Int32, stderr: String, command: [String])
+    case signalled(Int32, command: [String])
     case executableNotFound(String)
     case missingExecutableName
 
     public var description: String {
         switch self {
-        case let .signalled(code): return "The command terminated after receiving a signal with code \(code)"
-        case let .terminated(code, _): return "The command terminated with the code \(code)"
+        case let .signalled(code, command):
+            return "The command '\(command.joined(separator: " "))' terminated after receiving a signal with code \(code)"
+        case let .terminated(code, _, command):
+            return "The command '\(command.joined(separator: " "))' terminated with the code \(code)"
         case let .executableNotFound(name): return "Couldn't locate the executable '\(name)' in the environment."
         case .missingExecutableName: return "The executable name is missing."
         }
@@ -217,11 +219,15 @@ public struct CommandRunner: CommandRunning, Sendable {
                     switch process.terminationReason {
                     case .exit:
                         if process.terminationStatus != 0 {
-                            throw CommandError.terminated(process.terminationStatus, stderr: collectedStdErr.value)
+                            throw CommandError.terminated(
+                                process.terminationStatus,
+                                stderr: collectedStdErr.value,
+                                command: arguments
+                            )
                         }
                     case .uncaughtSignal:
                         if process.terminationStatus != 0 {
-                            throw CommandError.signalled(process.terminationStatus)
+                            throw CommandError.signalled(process.terminationStatus, command: arguments)
                         }
                     @unknown default:
                         break
