@@ -83,9 +83,10 @@ import Testing
             let description = error.description
 
             // Then
-            #expect(description.contains("xcodebuild test-without-building -enumerate-tests"))
-            #expect(description.contains("code 70"))
-            #expect(description.contains("xcodebuild: error: No such scheme."))
+            #expect(
+                description ==
+                    "The command 'xcodebuild test-without-building -enumerate-tests' terminated with the code 70:\nxcodebuild: error: No such scheme."
+            )
         }
 
         @Test func commandError_terminated_descriptionOmitsEmptyStderr() {
@@ -100,9 +101,7 @@ import Testing
             let description = error.description
 
             // Then
-            #expect(!description.contains(":\n"))
-            #expect(description.contains("'echo hi'"))
-            #expect(description.contains("code 1"))
+            #expect(description == "The command 'echo hi' terminated with the code 1")
         }
 
         @Test func commandError_localizedDescriptionMatchesDescription() {
@@ -117,8 +116,7 @@ import Testing
             let localized = (error as any Error).localizedDescription
 
             // Then
-            #expect(localized == error.description)
-            #expect(localized.contains("boom"))
+            #expect(localized == "The command 'ls /missing' terminated with the code 2:\nboom")
         }
     }
 #endif
