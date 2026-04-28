@@ -70,5 +70,53 @@ import Testing
             // When & Then
             #expect(throws: (any Error).self, performing: { try commandRunner.lookupExecutable(firstArgument: nil) })
         }
+
+        @Test func commandError_terminated_descriptionIncludesStderr() {
+            // Given
+            let error = CommandError.terminated(
+                70,
+                stderr: "xcodebuild: error: No such scheme.",
+                command: ["xcodebuild", "test-without-building", "-enumerate-tests"]
+            )
+
+            // When
+            let description = error.description
+
+            // Then
+            #expect(
+                description ==
+                    "The command 'xcodebuild test-without-building -enumerate-tests' terminated with the code 70:\nxcodebuild: error: No such scheme."
+            )
+        }
+
+        @Test func commandError_terminated_descriptionOmitsEmptyStderr() {
+            // Given
+            let error = CommandError.terminated(
+                1,
+                stderr: "   \n",
+                command: ["echo", "hi"]
+            )
+
+            // When
+            let description = error.description
+
+            // Then
+            #expect(description == "The command 'echo hi' terminated with the code 1")
+        }
+
+        @Test func commandError_localizedDescriptionMatchesDescription() {
+            // Given
+            let error = CommandError.terminated(
+                2,
+                stderr: "boom",
+                command: ["ls", "/missing"]
+            )
+
+            // When
+            let localized = (error as any Error).localizedDescription
+
+            // Then
+            #expect(localized == "The command 'ls /missing' terminated with the code 2:\nboom")
+        }
     }
 #endif
