@@ -104,7 +104,7 @@ public enum CommandEvent: Sendable {
     }
 }
 
-public enum CommandError: Error, CustomStringConvertible, Sendable {
+public enum CommandError: Error, CustomStringConvertible, LocalizedError, Sendable {
     case terminated(Int32, stderr: String, command: [String])
     case signalled(Int32, command: [String])
     case executableNotFound(String)
@@ -114,11 +114,20 @@ public enum CommandError: Error, CustomStringConvertible, Sendable {
         switch self {
         case let .signalled(code, command):
             return "The command '\(command.joined(separator: " "))' terminated after receiving a signal with code \(code)"
-        case let .terminated(code, _, command):
-            return "The command '\(command.joined(separator: " "))' terminated with the code \(code)"
+        case let .terminated(code, stderr, command):
+            let trimmedStderr = stderr.trimmingCharacters(in: .whitespacesAndNewlines)
+            let base = "The command '\(command.joined(separator: " "))' terminated with the code \(code)"
+            if trimmedStderr.isEmpty {
+                return base
+            }
+            return "\(base):\n\(trimmedStderr)"
         case let .executableNotFound(name): return "Couldn't locate the executable '\(name)' in the environment."
         case .missingExecutableName: return "The executable name is missing."
         }
+    }
+
+    public var errorDescription: String? {
+        description
     }
 }
 
