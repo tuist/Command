@@ -4,7 +4,7 @@
 "swiftformat" = "0.52.10"
 "pnpm" = "10.33.2"
 "node" = "22.14.0"
-"git-cliff" = "2.4.0"
+"git-cliff" = "2.13.1"
 
 [plugins]
 tuist = "https://github.com/asdf-community/asdf-tuist"
