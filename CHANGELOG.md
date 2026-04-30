@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.2] - 2026-04-30
+### Details
+#### Chore
+- Update dependency apple/swift-log to from: "1.12.0" by @renovate[bot] in [#219](https://github.com/tuist/command/pull/219)
+
 ## [0.14.1] - 2026-04-28
 ### Details
 #### Bug Fixes
@@ -15,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Features
 - Include the command in error descriptions by @fortmarek in [#229](https://github.com/tuist/command/pull/229)
 
+## New Contributors
+* @fortmarek made their first contribution
 ## [0.13.0] - 2025-02-20
 ### Details
 #### Features
@@ -85,6 +92,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Features
 - Not resolve executables that are already passed as absolute paths by @AndrewBarba in [#80](https://github.com/tuist/command/pull/80)
 
+## New Contributors
+* @AndrewBarba made their first contribution
 ## [0.5.7] - 2024-08-11
 ### Details
 #### Documentation
@@ -117,6 +126,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create .all-contributorsrc [skip ci] by @allcontributors[bot]
 - Update README.md [skip ci] by @allcontributors[bot]
 
+## New Contributors
+* @renovate[bot] made their first contribution in [#68](https://github.com/tuist/command/pull/68)
+* @allcontributors[bot] made their first contribution
+* @natanrolnik made their first contribution
+* @waltflanagan made their first contribution in [#22](https://github.com/tuist/command/pull/22)
+## [0.1.0] - 2024-04-16
+### Details
+## New Contributors
+* @pepicrft made their first contribution
+[0.14.2]: https://github.com/tuist/command/compare/0.14.1..0.14.2
 [0.14.1]: https://github.com/tuist/command/compare/0.14.0..0.14.1
 [0.14.0]: https://github.com/tuist/command/compare/0.13.0..0.14.0
 [0.13.0]: https://github.com/tuist/command/compare/0.12.2..0.13.0
