@@ -216,8 +216,17 @@ public struct CommandRunner: CommandRunning, Sendable {
                         }
                     }
 
-                    try process.run()
-                    process.waitUntilExit()
+                    try await withCheckedThrowingContinuation { (processCompletion: CheckedContinuation<Void, any Error>) in
+                        process.terminationHandler = { _ in
+                            processCompletion.resume()
+                        }
+                        do {
+                            try process.run()
+                        } catch {
+                            process.terminationHandler = nil
+                            processCompletion.resume(throwing: error)
+                        }
+                    }
 
                     await stdoutTask.value
                     await stderrTask.value
