@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.4] - 2026-05-08
+### Details
+#### Bug Fixes
+- Replace blocking waitUntilExit with async terminationHandler to prevent thread starvation by @irena327 in [#249](https://github.com/tuist/command/pull/249)
+
+## New Contributors
+* @irena327 made their first contribution in [#249](https://github.com/tuist/command/pull/249)
 ## [0.14.3] - 2026-05-01
 ### Details
 #### Chore
@@ -140,6 +147,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Details
 ## New Contributors
 * @pepicrft made their first contribution
+[0.14.4]: https://github.com/tuist/command/compare/0.14.3..0.14.4
 [0.14.3]: https://github.com/tuist/command/compare/0.14.2..0.14.3
 [0.14.2]: https://github.com/tuist/command/compare/0.14.1..0.14.2
 [0.14.1]: https://github.com/tuist/command/compare/0.14.0..0.14.1
