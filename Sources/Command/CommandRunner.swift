@@ -109,6 +109,7 @@ public enum CommandError: Error, CustomStringConvertible, LocalizedError, Sendab
     case signalled(Int32, command: [String])
     case executableNotFound(String)
     case missingExecutableName
+    case invalidWorkingDirectory(String)
 
     public var description: String {
         switch self {
@@ -123,6 +124,11 @@ public enum CommandError: Error, CustomStringConvertible, LocalizedError, Sendab
             return "\(base):\n\(trimmedStderr)"
         case let .executableNotFound(name): return "Couldn't locate the executable '\(name)' in the environment."
         case .missingExecutableName: return "The executable name is missing."
+        case let .invalidWorkingDirectory(path):
+            if path.isEmpty {
+                return "Couldn't resolve the current working directory: FileManager returned an empty path (getcwd likely failed)."
+            }
+            return "The resolved working directory '\(path)' is not a valid absolute path."
         }
     }
 
@@ -151,8 +157,15 @@ public struct CommandRunner: CommandRunning, Sendable {
                     // Get the working directory if not passed.
                     var workingDirectory = workingDirectory
                     if workingDirectory == nil {
-                        // swiftlint:disable:next force_try
-                        workingDirectory = try! .init(validating: FileManager.default.currentDirectoryPath)
+                        let currentDirectoryPath = FileManager.default.currentDirectoryPath
+                        guard !currentDirectoryPath.isEmpty else {
+                            throw CommandError.invalidWorkingDirectory("")
+                        }
+                        do {
+                            workingDirectory = try .init(validating: currentDirectoryPath)
+                        } catch {
+                            throw CommandError.invalidWorkingDirectory(currentDirectoryPath)
+                        }
                     }
 
                     let collectedStdErr: ThreadSafe<String> = ThreadSafe("")
