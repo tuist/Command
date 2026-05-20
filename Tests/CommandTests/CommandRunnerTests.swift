@@ -118,5 +118,30 @@ import Testing
             // Then
             #expect(localized == "The command 'ls /missing' terminated with the code 2:\nboom")
         }
+
+        @Test func commandError_invalidWorkingDirectory_empty_descriptionMentionsGetcwd() {
+            // Given
+            let error = CommandError.invalidWorkingDirectory("")
+
+            // When
+            let description = error.description
+
+            // Then
+            #expect(
+                description ==
+                    "Couldn't resolve the current working directory: FileManager returned an empty path (getcwd likely failed)."
+            )
+        }
+
+        @Test func commandError_invalidWorkingDirectory_nonEmpty_includesPath() {
+            // Given
+            let error = CommandError.invalidWorkingDirectory("relative/path")
+
+            // When
+            let description = error.description
+
+            // Then
+            #expect(description == "The resolved working directory 'relative/path' is not a valid absolute path.")
+        }
     }
 #endif
