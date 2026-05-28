@@ -25,7 +25,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/tuist/Path", .upToNextMajor(from: "0.3.8")),
-        .package(url: "https://github.com/apple/swift-log", .upToNextMajor(from: "1.12.1")),
+        .package(url: "https://github.com/apple/swift-log", .upToNextMajor(from: "1.13.1")),
         .package(url: "https://github.com/Kolos65/Mockable", .upToNextMajor(from: "0.6.2")),
     ],
     targets: [
