@@ -299,9 +299,6 @@ public struct CommandRunner: CommandRunning, Sendable {
         process.executableURL = URL(fileURLWithPath: command)
         process.arguments = arguments
         process.environment = ProcessInfo.processInfo.environment
-        // `which`/`where` resolves the executable from `PATH`, not the working directory, so
-        // we don't set `currentDirectoryURL`. Reading `getcwd` here crashed `NSTask` when it
-        // transiently returned an empty path under concurrent process launches.
 
         let pipe = Pipe()
         process.standardOutput = pipe
