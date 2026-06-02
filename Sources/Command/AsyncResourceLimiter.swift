@@ -23,7 +23,7 @@ actor AsyncResourceLimiter {
         self.limit = limit
     }
 
-    func withPermit<T>(_ operation: @Sendable () async throws -> T) async throws -> T {
+    func withPermit<T: Sendable>(_ operation: @Sendable () async throws -> T) async throws -> T {
         try await acquire()
 
         do {
