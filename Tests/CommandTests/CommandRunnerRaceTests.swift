@@ -51,6 +51,54 @@ import Testing
             #endif
         }
 
+        @Test func cancellingWhileWaitingForPermit_doesNotLaunchSubprocess() async throws {
+            #if os(macOS)
+                // With a single permit, a second command is parked inside the limiter waiting for the
+                // permit. Cancelling its stream while it waits must unwind the producer so it never
+                // launches a subprocess once the permit frees up.
+                let commandRunner = CommandRunner(maximumConcurrentProcesses: 1)
+
+                let directory = FileManager.default.temporaryDirectory
+                    .appendingPathComponent("command-cancel-\(UUID().uuidString)")
+                try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+                defer { try? FileManager.default.removeItem(at: directory) }
+
+                let holderMarker = directory.appendingPathComponent("holder-running")
+                let blockedSentinel = directory.appendingPathComponent("blocked-launched")
+
+                // Holds the only permit: signals it is running, then stays alive long enough for us to
+                // enqueue and cancel a second command while the permit is taken.
+                let holderScript = "touch \"\(holderMarker.path)\"; sleep 2; rm -f \"\(holderMarker.path)\""
+                let holder = Task {
+                    for try await _ in commandRunner.run(arguments: ["/bin/sh", "-c", holderScript]) {}
+                }
+
+                while !FileManager.default.fileExists(atPath: holderMarker.path) {
+                    try await Task.sleep(nanoseconds: 5_000_000)
+                }
+
+                // This can only start once the permit frees. If it ever launches it creates the
+                // sentinel; because we cancel it while it is still waiting, the sentinel must never appear.
+                let blockedScript = "touch \"\(blockedSentinel.path)\""
+                let blocked = Task {
+                    for try await _ in commandRunner.run(arguments: ["/bin/sh", "-c", blockedScript]) {}
+                }
+
+                try await Task.sleep(nanoseconds: 100_000_000)
+                blocked.cancel()
+                _ = await blocked.result
+
+                // Release the permit and give any incorrectly-orphaned producer a chance to launch.
+                _ = try? await holder.value
+                try await Task.sleep(nanoseconds: 300_000_000)
+
+                #expect(
+                    !FileManager.default.fileExists(atPath: blockedSentinel.path),
+                    "A command cancelled while waiting for a permit must not launch a subprocess"
+                )
+            #endif
+        }
+
         @Test func runsManyConcurrent_successfully() async throws {
             #if os(Linux) || os(macOS)
                 let commandRunner = CommandRunner()

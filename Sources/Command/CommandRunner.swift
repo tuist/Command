@@ -204,7 +204,9 @@ public struct CommandRunner: CommandRunning, Sendable {
         workingDirectory: Path.AbsolutePath? = nil
     ) -> AsyncThrowingStream<CommandEvent, any Error> {
         AsyncThrowingStream(CommandEvent.self, bufferingPolicy: .unbounded) { continuation in
-            Task.detached {
+            let runningProcess = ThreadSafe<Process?>(nil)
+
+            let task = Task.detached {
                 do {
                     try await processLimiter.withPermit {
                         let loggerMetadata: Logger.Metadata = ["command": .string(arguments.joined(separator: " "))]
@@ -269,18 +271,9 @@ public struct CommandRunner: CommandRunning, Sendable {
 
                         logger?.debug("Running sub-process", metadata: loggerMetadata)
 
-                        let threadSafeProcess = ThreadSafe(process)
-
-                        continuation.onTermination = { termination in
-                            switch termination {
-                            case .cancelled:
-                                if threadSafeProcess.value.isRunning {
-                                    threadSafeProcess.value.terminate()
-                                }
-                            default:
-                                break
-                            }
-                        }
+                        // Publish the process so the stream's termination handler (installed before
+                        // the permit was awaited) can terminate it once it exists.
+                        runningProcess.mutate { $0 = process }
 
                         try await withCheckedThrowingContinuation { (processCompletion: CheckedContinuation<Void, any Error>) in
                             process.terminationHandler = { _ in
@@ -288,6 +281,11 @@ public struct CommandRunner: CommandRunning, Sendable {
                             }
                             do {
                                 try process.run()
+                                // Close the race where the stream is cancelled after the process is
+                                // published but before it started running.
+                                if Task.isCancelled {
+                                    process.terminate()
+                                }
                             } catch {
                                 process.terminationHandler = nil
                                 processCompletion.resume(throwing: error)
@@ -320,6 +318,22 @@ public struct CommandRunner: CommandRunning, Sendable {
                     continuation.finish()
                 } catch {
                     continuation.finish(throwing: error)
+                }
+            }
+
+            continuation.onTermination = { termination in
+                switch termination {
+                case .cancelled:
+                    // Cancelling the producer task unwinds it whether it is still waiting for a
+                    // permit or already running the subprocess.
+                    task.cancel()
+                    runningProcess.withValue { process in
+                        if let process, process.isRunning {
+                            process.terminate()
+                        }
+                    }
+                default:
+                    break
                 }
             }
         }
