@@ -146,8 +146,19 @@ public enum CommandError: Error, CustomStringConvertible, LocalizedError, Sendab
 public struct CommandRunner: CommandRunning, Sendable {
     let logger: Logger?
 
+    /// Bounds the number of concurrently-running subprocesses so the pipe file descriptors they
+    /// hold can't exhaust the process's file-descriptor table.
+    private let processLimiter: AsyncResourceLimiter
+
     public init(logger: Logger? = nil) {
         self.logger = logger
+        processLimiter = Self.sharedProcessLimiter
+    }
+
+    /// Creates a runner with a custom cap on concurrently-running subprocesses.
+    init(logger: Logger? = nil, maximumConcurrentProcesses: Int) {
+        self.logger = logger
+        processLimiter = AsyncResourceLimiter(limit: maximumConcurrentProcesses)
     }
 
     /// File descriptors kept in reserve for stdio and other process-wide handles.
@@ -160,10 +171,9 @@ public struct CommandRunner: CommandRunning, Sendable {
     /// Used when the file-descriptor limit can't be determined.
     private static let fallbackMaximumConcurrentProcesses = 16
 
-    /// Bounds the number of concurrently-running subprocesses so the pipe file descriptors they
-    /// hold can't exhaust the process's file-descriptor table. The limit is derived from the
-    /// current soft `RLIMIT_NOFILE`, so it adapts if the limit is raised at startup.
-    private static let processLimiter = AsyncResourceLimiter(
+    /// Shared limiter whose cap is derived from the current soft `RLIMIT_NOFILE`, so it adapts if
+    /// the limit is raised at startup.
+    private static let sharedProcessLimiter = AsyncResourceLimiter(
         limitProvider: { systemMaximumConcurrentProcesses() }
     )
 
@@ -196,7 +206,7 @@ public struct CommandRunner: CommandRunning, Sendable {
         AsyncThrowingStream(CommandEvent.self, bufferingPolicy: .unbounded) { continuation in
             Task.detached {
                 do {
-                    try await Self.processLimiter.withPermit {
+                    try await processLimiter.withPermit {
                         let loggerMetadata: Logger.Metadata = ["command": .string(arguments.joined(separator: " "))]
                         // Resolve the working directory if not passed. `getcwd` can transiently
                         // return an empty path under concurrent process launches, so fall back to
