@@ -154,17 +154,14 @@ public struct CommandRunner: CommandRunning, Sendable {
             Task.detached {
                 do {
                     let loggerMetadata: Logger.Metadata = ["command": .string(arguments.joined(separator: " "))]
-                    // Get the working directory if not passed.
+                    // Resolve the working directory if not passed. `getcwd` can transiently
+                    // return an empty path under concurrent process launches, so fall back to
+                    // letting the child inherit the process working directory instead of failing.
                     var workingDirectory = workingDirectory
                     if workingDirectory == nil {
                         let currentDirectoryPath = FileManager.default.currentDirectoryPath
-                        guard !currentDirectoryPath.isEmpty else {
-                            throw CommandError.invalidWorkingDirectory("")
-                        }
-                        do {
-                            workingDirectory = try .init(validating: currentDirectoryPath)
-                        } catch {
-                            throw CommandError.invalidWorkingDirectory(currentDirectoryPath)
+                        if !currentDirectoryPath.isEmpty {
+                            workingDirectory = try? .init(validating: currentDirectoryPath)
                         }
                     }
 
@@ -202,7 +199,9 @@ public struct CommandRunner: CommandRunning, Sendable {
                         }
                     }
 
-                    process.currentDirectoryURL = URL(fileURLWithPath: workingDirectory!.pathString)
+                    if let workingDirectory {
+                        process.currentDirectoryURL = URL(fileURLWithPath: workingDirectory.pathString)
+                    }
                     process.standardOutput = stdoutPipe
                     process.standardError = stderrPipe
                     process.standardInput = FileHandle.standardInput
@@ -300,7 +299,6 @@ public struct CommandRunner: CommandRunning, Sendable {
         process.executableURL = URL(fileURLWithPath: command)
         process.arguments = arguments
         process.environment = ProcessInfo.processInfo.environment
-        process.currentDirectoryURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 
         let pipe = Pipe()
         process.standardOutput = pipe
