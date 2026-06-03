@@ -22,6 +22,32 @@ import Testing
             #endif
         }
 
+        @Test func discardOutput_emitsNoEventsButStillRuns() async throws {
+            #if !os(Windows)
+                let commandRunner = CommandRunner()
+
+                // Capturing yields the command's output...
+                let captured = try await commandRunner.run(arguments: ["echo", "foo"], output: .capture)
+                    .reduce(into: [String]()) { $0.append($1.string() ?? "") }
+                #expect(captured == ["foo\n"])
+
+                // ...while discarding allocates no pipes and emits nothing, yet still runs.
+                let discardedEventCount = try await commandRunner.run(arguments: ["echo", "foo"], output: .discard)
+                    .reduce(into: 0) { count, _ in count += 1 }
+                #expect(discardedEventCount == 0)
+            #endif
+        }
+
+        @Test func discardOutput_stillReportsNonZeroExit() async throws {
+            #if !os(Windows)
+                let commandRunner = CommandRunner()
+
+                await #expect(throws: CommandError.self) {
+                    for try await _ in commandRunner.run(arguments: ["/bin/sh", "-c", "exit 7"], output: .discard) {}
+                }
+            #endif
+        }
+
         @Test func lookupExecutable_withAbsolutePath() throws {
             // Given
             let commandRunner = CommandRunner()

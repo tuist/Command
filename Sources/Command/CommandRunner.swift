@@ -12,6 +12,18 @@ import Path
     import Glibc
 #endif
 
+/// Controls how a subprocess's standard output and error are handled.
+public enum OutputRedirection: Sendable {
+    /// Captures standard output and error through pipes and emits them as `CommandEvent`s.
+    case capture
+    /// Discards standard output and error by redirecting them to the null device. No pipes are
+    /// created, so the command holds no extra file descriptors and emits no events.
+    case discard
+    /// Lets the subprocess inherit the parent process's standard output and error. No pipes are
+    /// created and no events are emitted.
+    case inherit
+}
+
 /**
  `CommandRunning` is a protocol that declares the interface to run system processes.
  The main implementation of the protocol is `CommandRunner`.
@@ -32,6 +44,21 @@ public protocol CommandRunning: Sendable {
         arguments: [String],
         environment: [String: String],
         workingDirectory: Path.AbsolutePath?
+    ) -> AsyncThrowingStream<CommandEvent, any Error>
+
+    /// Runs a command in the system, controlling how its output is handled.
+    /// - Parameters:
+    ///   - arguments: The command arguments where the first argument represents the executable.
+    ///   - environment: The environment variables that will be passed to the process running the command.
+    ///   - workingDirectory: The directory from where the command will be executed.
+    ///   - output: How the subprocess's standard output and error are handled. Use ``OutputRedirection/discard`` or
+    /// ``OutputRedirection/inherit`` to avoid allocating output pipes when the output isn't needed.
+    /// - Returns: An async throwing stream to subscribe to the emitted events and completion of the underlying process.
+    func run(
+        arguments: [String],
+        environment: [String: String],
+        workingDirectory: Path.AbsolutePath?,
+        output: OutputRedirection
     ) -> AsyncThrowingStream<CommandEvent, any Error>
 }
 
@@ -197,11 +224,20 @@ public struct CommandRunner: CommandRunning, Sendable {
         #endif
     }
 
-    // swiftlint:disable:next function_body_length
     public func run(
         arguments: [String],
         environment: [String: String] = ProcessInfo.processInfo.environment,
         workingDirectory: Path.AbsolutePath? = nil
+    ) -> AsyncThrowingStream<CommandEvent, any Error> {
+        run(arguments: arguments, environment: environment, workingDirectory: workingDirectory, output: .capture)
+    }
+
+    // swiftlint:disable:next function_body_length
+    public func run(
+        arguments: [String],
+        environment: [String: String] = ProcessInfo.processInfo.environment,
+        workingDirectory: Path.AbsolutePath? = nil,
+        output: OutputRedirection = .capture
     ) -> AsyncThrowingStream<CommandEvent, any Error> {
         AsyncThrowingStream(CommandEvent.self, bufferingPolicy: .unbounded) { continuation in
             let runningProcess = ThreadSafe<Process?>(nil)
@@ -225,41 +261,64 @@ public struct CommandRunner: CommandRunning, Sendable {
 
                         // Process
                         let process = Process()
-                        let stdoutPipe = Pipe()
-                        let stderrPipe = Pipe()
 
-                        let stdoutTask = Task {
-                            do {
-                                for try await data in stdoutPipe.fileHandleForReading.byteStream() {
-                                    continuation.yield(.standardOutput([UInt8](data)))
-                                    if let output = String(data: data, encoding: .utf8) {
-                                        logger?.debug("\(output)", metadata: loggerMetadata)
-                                    }
-                                }
-                            } catch {
-                                logger?.error("Error reading stdout: \(error)", metadata: loggerMetadata)
-                            }
-                        }
+                        // Only allocate output pipes when the caller wants to capture output.
+                        // Discarding or inheriting avoids holding any extra file descriptors.
+                        let stdoutPipe: Pipe?
+                        let stderrPipe: Pipe?
+                        let stdoutTask: Task<Void, Never>?
+                        let stderrTask: Task<Void, Never>?
 
-                        let stderrTask = Task {
-                            do {
-                                for try await data in stderrPipe.fileHandleForReading.byteStream() {
-                                    continuation.yield(.standardError([UInt8](data)))
-                                    if let output = String(data: data, encoding: .utf8) {
-                                        collectedStdErr.mutate { $0.append(output) }
-                                        logger?.error("\(output)", metadata: loggerMetadata)
+                        switch output {
+                        case .capture:
+                            let outPipe = Pipe()
+                            let errPipe = Pipe()
+                            stdoutPipe = outPipe
+                            stderrPipe = errPipe
+                            process.standardOutput = outPipe
+                            process.standardError = errPipe
+                            stdoutTask = Task {
+                                do {
+                                    for try await data in outPipe.fileHandleForReading.byteStream() {
+                                        continuation.yield(.standardOutput([UInt8](data)))
+                                        if let output = String(data: data, encoding: .utf8) {
+                                            logger?.debug("\(output)", metadata: loggerMetadata)
+                                        }
                                     }
+                                } catch {
+                                    logger?.error("Error reading stdout: \(error)", metadata: loggerMetadata)
                                 }
-                            } catch {
-                                logger?.error("Error reading stderr: \(error)", metadata: loggerMetadata)
                             }
+                            stderrTask = Task {
+                                do {
+                                    for try await data in errPipe.fileHandleForReading.byteStream() {
+                                        continuation.yield(.standardError([UInt8](data)))
+                                        if let output = String(data: data, encoding: .utf8) {
+                                            collectedStdErr.mutate { $0.append(output) }
+                                            logger?.error("\(output)", metadata: loggerMetadata)
+                                        }
+                                    }
+                                } catch {
+                                    logger?.error("Error reading stderr: \(error)", metadata: loggerMetadata)
+                                }
+                            }
+                        case .discard:
+                            stdoutPipe = nil
+                            stderrPipe = nil
+                            stdoutTask = nil
+                            stderrTask = nil
+                            process.standardOutput = FileHandle.nullDevice
+                            process.standardError = FileHandle.nullDevice
+                        case .inherit:
+                            stdoutPipe = nil
+                            stderrPipe = nil
+                            stdoutTask = nil
+                            stderrTask = nil
                         }
 
                         if let workingDirectory {
                             process.currentDirectoryURL = URL(fileURLWithPath: workingDirectory.pathString)
                         }
-                        process.standardOutput = stdoutPipe
-                        process.standardError = stderrPipe
                         process.standardInput = FileHandle.standardInput
                         process.environment = environment
 
@@ -292,11 +351,11 @@ public struct CommandRunner: CommandRunning, Sendable {
                             }
                         }
 
-                        await stdoutTask.value
-                        await stderrTask.value
+                        await stdoutTask?.value
+                        await stderrTask?.value
 
-                        try? stdoutPipe.fileHandleForReading.close()
-                        try? stderrPipe.fileHandleForReading.close()
+                        try? stdoutPipe?.fileHandleForReading.close()
+                        try? stderrPipe?.fileHandleForReading.close()
 
                         switch process.terminationReason {
                         case .exit:
