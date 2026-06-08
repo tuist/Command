@@ -6,6 +6,12 @@ import Logging
 #endif
 import Path
 
+#if canImport(Darwin)
+    import Darwin
+#elseif canImport(Glibc)
+    import Glibc
+#endif
+
 /**
  `CommandRunning` is a protocol that declares the interface to run system processes.
  The main implementation of the protocol is `CommandRunner`.
@@ -140,8 +146,55 @@ public enum CommandError: Error, CustomStringConvertible, LocalizedError, Sendab
 public struct CommandRunner: CommandRunning, Sendable {
     let logger: Logger?
 
+    /// Bounds the number of concurrently-running subprocesses so the pipe file descriptors they
+    /// hold can't exhaust the process's file-descriptor table.
+    private let processLimiter: AsyncResourceLimiter
+
     public init(logger: Logger? = nil) {
         self.logger = logger
+        processLimiter = Self.sharedProcessLimiter
+    }
+
+    /// Creates a runner with a custom cap on concurrently-running subprocesses.
+    init(logger: Logger? = nil, maximumConcurrentProcesses: Int) {
+        self.logger = logger
+        processLimiter = AsyncResourceLimiter(limit: maximumConcurrentProcesses)
+    }
+
+    /// File descriptors kept in reserve for stdio and other process-wide handles.
+    private static let reservedFileDescriptors = 32
+    /// Approximate number of file descriptors a running subprocess holds (two pipes, plus the
+    /// transient pipe used to locate the executable).
+    private static let fileDescriptorsPerProcess = 6
+    /// Upper bound on concurrent subprocesses, regardless of how high the file-descriptor limit is.
+    private static let maximumConcurrentProcesses = 256
+    /// Used when the file-descriptor limit can't be determined.
+    private static let fallbackMaximumConcurrentProcesses = 16
+
+    /// Shared limiter whose cap is derived from the current soft `RLIMIT_NOFILE`, so it adapts if
+    /// the limit is raised at startup.
+    private static let sharedProcessLimiter = AsyncResourceLimiter(
+        limitProvider: { systemMaximumConcurrentProcesses() }
+    )
+
+    private static func systemMaximumConcurrentProcesses() -> Int {
+        #if os(Windows)
+            return fallbackMaximumConcurrentProcesses
+        #else
+            var resourceLimit = rlimit()
+            #if canImport(Glibc)
+                let openFilesResource = Int32(RLIMIT_NOFILE.rawValue)
+            #else
+                let openFilesResource = RLIMIT_NOFILE
+            #endif
+            guard getrlimit(openFilesResource, &resourceLimit) == 0 else {
+                return fallbackMaximumConcurrentProcesses
+            }
+            let softLimit = Int(clamping: resourceLimit.rlim_cur)
+            let descriptorsAvailable = max(1, softLimit - reservedFileDescriptors)
+            let proportionalLimit = max(1, descriptorsAvailable / fileDescriptorsPerProcess)
+            return min(maximumConcurrentProcesses, proportionalLimit)
+        #endif
     }
 
     // swiftlint:disable:next function_body_length
@@ -151,120 +204,136 @@ public struct CommandRunner: CommandRunning, Sendable {
         workingDirectory: Path.AbsolutePath? = nil
     ) -> AsyncThrowingStream<CommandEvent, any Error> {
         AsyncThrowingStream(CommandEvent.self, bufferingPolicy: .unbounded) { continuation in
-            Task.detached {
+            let runningProcess = ThreadSafe<Process?>(nil)
+
+            let task = Task.detached {
                 do {
-                    let loggerMetadata: Logger.Metadata = ["command": .string(arguments.joined(separator: " "))]
-                    // Resolve the working directory if not passed. `getcwd` can transiently
-                    // return an empty path under concurrent process launches, so fall back to
-                    // letting the child inherit the process working directory instead of failing.
-                    var workingDirectory = workingDirectory
-                    if workingDirectory == nil {
-                        let currentDirectoryPath = FileManager.default.currentDirectoryPath
-                        if !currentDirectoryPath.isEmpty {
-                            workingDirectory = try? .init(validating: currentDirectoryPath)
+                    try await processLimiter.withPermit {
+                        let loggerMetadata: Logger.Metadata = ["command": .string(arguments.joined(separator: " "))]
+                        // Resolve the working directory if not passed. `getcwd` can transiently
+                        // return an empty path under concurrent process launches, so fall back to
+                        // letting the child inherit the process working directory instead of failing.
+                        var workingDirectory = workingDirectory
+                        if workingDirectory == nil {
+                            let currentDirectoryPath = FileManager.default.currentDirectoryPath
+                            if !currentDirectoryPath.isEmpty {
+                                workingDirectory = try? .init(validating: currentDirectoryPath)
+                            }
                         }
-                    }
 
-                    let collectedStdErr: ThreadSafe<String> = ThreadSafe("")
+                        let collectedStdErr: ThreadSafe<String> = ThreadSafe("")
 
-                    // Process
-                    let process = Process()
-                    let stdoutPipe = Pipe()
-                    let stderrPipe = Pipe()
+                        // Process
+                        let process = Process()
+                        let stdoutPipe = Pipe()
+                        let stderrPipe = Pipe()
 
-                    let stdoutTask = Task {
-                        do {
-                            for try await data in stdoutPipe.fileHandleForReading.byteStream() {
-                                continuation.yield(.standardOutput([UInt8](data)))
-                                if let output = String(data: data, encoding: .utf8) {
-                                    logger?.debug("\(output)", metadata: loggerMetadata)
+                        let stdoutTask = Task {
+                            do {
+                                for try await data in stdoutPipe.fileHandleForReading.byteStream() {
+                                    continuation.yield(.standardOutput([UInt8](data)))
+                                    if let output = String(data: data, encoding: .utf8) {
+                                        logger?.debug("\(output)", metadata: loggerMetadata)
+                                    }
                                 }
+                            } catch {
+                                logger?.error("Error reading stdout: \(error)", metadata: loggerMetadata)
                             }
-                        } catch {
-                            logger?.error("Error reading stdout: \(error)", metadata: loggerMetadata)
                         }
-                    }
 
-                    let stderrTask = Task {
-                        do {
-                            for try await data in stderrPipe.fileHandleForReading.byteStream() {
-                                continuation.yield(.standardError([UInt8](data)))
-                                if let output = String(data: data, encoding: .utf8) {
-                                    collectedStdErr.mutate { $0.append(output) }
-                                    logger?.error("\(output)", metadata: loggerMetadata)
+                        let stderrTask = Task {
+                            do {
+                                for try await data in stderrPipe.fileHandleForReading.byteStream() {
+                                    continuation.yield(.standardError([UInt8](data)))
+                                    if let output = String(data: data, encoding: .utf8) {
+                                        collectedStdErr.mutate { $0.append(output) }
+                                        logger?.error("\(output)", metadata: loggerMetadata)
+                                    }
                                 }
+                            } catch {
+                                logger?.error("Error reading stderr: \(error)", metadata: loggerMetadata)
                             }
-                        } catch {
-                            logger?.error("Error reading stderr: \(error)", metadata: loggerMetadata)
                         }
-                    }
 
-                    if let workingDirectory {
-                        process.currentDirectoryURL = URL(fileURLWithPath: workingDirectory.pathString)
-                    }
-                    process.standardOutput = stdoutPipe
-                    process.standardError = stderrPipe
-                    process.standardInput = FileHandle.standardInput
-                    process.environment = environment
+                        if let workingDirectory {
+                            process.currentDirectoryURL = URL(fileURLWithPath: workingDirectory.pathString)
+                        }
+                        process.standardOutput = stdoutPipe
+                        process.standardError = stderrPipe
+                        process.standardInput = FileHandle.standardInput
+                        process.environment = environment
 
-                    let processArguments = Array(arguments.dropFirst())
-                    process.arguments = processArguments
+                        let processArguments = Array(arguments.dropFirst())
+                        process.arguments = processArguments
 
-                    let executable = try lookupExecutable(firstArgument: arguments.first)
-                    process.executableURL = executable
+                        let executable = try lookupExecutable(firstArgument: arguments.first)
+                        process.executableURL = executable
 
-                    logger?.debug("Running sub-process", metadata: loggerMetadata)
+                        logger?.debug("Running sub-process", metadata: loggerMetadata)
 
-                    let threadSafeProcess = ThreadSafe(process)
+                        // Publish the process so the stream's termination handler (installed before
+                        // the permit was awaited) can terminate it once it exists.
+                        runningProcess.mutate { $0 = process }
 
-                    continuation.onTermination = { termination in
-                        switch termination {
-                        case .cancelled:
-                            if threadSafeProcess.value.isRunning {
-                                threadSafeProcess.value.terminate()
+                        try await withCheckedThrowingContinuation { (processCompletion: CheckedContinuation<Void, any Error>) in
+                            process.terminationHandler = { _ in
+                                processCompletion.resume()
                             }
-                        default:
+                            do {
+                                try process.run()
+                                // Close the race where the stream is cancelled after the process is
+                                // published but before it started running.
+                                if Task.isCancelled {
+                                    process.terminate()
+                                }
+                            } catch {
+                                process.terminationHandler = nil
+                                processCompletion.resume(throwing: error)
+                            }
+                        }
+
+                        await stdoutTask.value
+                        await stderrTask.value
+
+                        try? stdoutPipe.fileHandleForReading.close()
+                        try? stderrPipe.fileHandleForReading.close()
+
+                        switch process.terminationReason {
+                        case .exit:
+                            if process.terminationStatus != 0 {
+                                throw CommandError.terminated(
+                                    process.terminationStatus,
+                                    stderr: collectedStdErr.value,
+                                    command: arguments
+                                )
+                            }
+                        case .uncaughtSignal:
+                            if process.terminationStatus != 0 {
+                                throw CommandError.signalled(process.terminationStatus, command: arguments)
+                            }
+                        @unknown default:
                             break
                         }
-                    }
-
-                    try await withCheckedThrowingContinuation { (processCompletion: CheckedContinuation<Void, any Error>) in
-                        process.terminationHandler = { _ in
-                            processCompletion.resume()
-                        }
-                        do {
-                            try process.run()
-                        } catch {
-                            process.terminationHandler = nil
-                            processCompletion.resume(throwing: error)
-                        }
-                    }
-
-                    await stdoutTask.value
-                    await stderrTask.value
-
-                    try? stdoutPipe.fileHandleForReading.close()
-                    try? stderrPipe.fileHandleForReading.close()
-
-                    switch process.terminationReason {
-                    case .exit:
-                        if process.terminationStatus != 0 {
-                            throw CommandError.terminated(
-                                process.terminationStatus,
-                                stderr: collectedStdErr.value,
-                                command: arguments
-                            )
-                        }
-                    case .uncaughtSignal:
-                        if process.terminationStatus != 0 {
-                            throw CommandError.signalled(process.terminationStatus, command: arguments)
-                        }
-                    @unknown default:
-                        break
                     }
                     continuation.finish()
                 } catch {
                     continuation.finish(throwing: error)
+                }
+            }
+
+            continuation.onTermination = { termination in
+                switch termination {
+                case .cancelled:
+                    // Cancelling the producer task unwinds it whether it is still waiting for a
+                    // permit or already running the subprocess.
+                    task.cancel()
+                    runningProcess.withValue { process in
+                        if let process, process.isRunning {
+                            process.terminate()
+                        }
+                    }
+                default:
+                    break
                 }
             }
         }
