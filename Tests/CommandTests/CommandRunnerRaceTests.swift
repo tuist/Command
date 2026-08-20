@@ -99,6 +99,32 @@ import Testing
             #endif
         }
 
+        @Test func cancellingRunningProcess_terminatesItsProcessGroup() async throws {
+            #if os(macOS)
+                let commandRunner = CommandRunner()
+                let directory = FileManager.default.temporaryDirectory
+                    .appendingPathComponent("command-process-group-\(UUID().uuidString)")
+                try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+                defer { try? FileManager.default.removeItem(at: directory) }
+
+                let processStarted = directory.appendingPathComponent("process-started")
+                let childEscaped = directory.appendingPathComponent("child-escaped")
+                let script = "touch \"\(processStarted.path)\"; sleep 0.5; touch \"\(childEscaped.path)\""
+                let processTask = Task {
+                    for try await _ in commandRunner.run(arguments: ["/bin/sh", "-c", script]) {}
+                }
+
+                while !FileManager.default.fileExists(atPath: processStarted.path) {
+                    try await Task.sleep(nanoseconds: 5_000_000)
+                }
+                processTask.cancel()
+                _ = await processTask.result
+                try await Task.sleep(nanoseconds: 750_000_000)
+
+                #expect(!FileManager.default.fileExists(atPath: childEscaped.path))
+            #endif
+        }
+
         @Test func runsManyConcurrent_successfully() async throws {
             #if os(Linux) || os(macOS)
                 let commandRunner = CommandRunner()

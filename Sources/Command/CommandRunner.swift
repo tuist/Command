@@ -1,5 +1,6 @@
 import Foundation
 import Logging
+
 // Mockable depends on Combine, which is only available on macOS.
 #if os(macOS)
     import Mockable
@@ -205,6 +206,22 @@ public struct CommandRunner: CommandRunning, Sendable {
     ) -> AsyncThrowingStream<CommandEvent, any Error> {
         AsyncThrowingStream(CommandEvent.self, bufferingPolicy: .unbounded) { continuation in
             let runningProcess = ThreadSafe<Process?>(nil)
+            let processGroupID = ThreadSafe<pid_t?>(nil)
+
+            @Sendable func terminateRunningProcess() {
+                runningProcess.withValue { process in
+                    guard let process, process.isRunning else { return }
+
+                    guard let groupID = processGroupID.value else {
+                        process.terminate()
+                        return
+                    }
+
+                    // Xcode can launch test runners and other helpers below xcodebuild. Kill the
+                    // process group immediately so cancellation cannot leave UI-test descendants behind.
+                    _ = kill(-groupID, SIGKILL)
+                }
+            }
 
             let task = Task.detached {
                 do {
@@ -281,10 +298,13 @@ public struct CommandRunner: CommandRunning, Sendable {
                             }
                             do {
                                 try process.run()
+                                if setpgid(process.processIdentifier, process.processIdentifier) == 0 {
+                                    processGroupID.mutate { $0 = process.processIdentifier }
+                                }
                                 // Close the race where the stream is cancelled after the process is
                                 // published but before it started running.
                                 if Task.isCancelled {
-                                    process.terminate()
+                                    terminateRunningProcess()
                                 }
                             } catch {
                                 process.terminationHandler = nil
@@ -327,11 +347,7 @@ public struct CommandRunner: CommandRunning, Sendable {
                     // Cancelling the producer task unwinds it whether it is still waiting for a
                     // permit or already running the subprocess.
                     task.cancel()
-                    runningProcess.withValue { process in
-                        if let process, process.isRunning {
-                            process.terminate()
-                        }
-                    }
+                    terminateRunningProcess()
                 default:
                     break
                 }
