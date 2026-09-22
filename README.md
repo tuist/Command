@@ -7,6 +7,9 @@
 [![Command](https://github.com/tuist/Command/actions/workflows/command.yml/badge.svg)](https://github.com/tuist/Command/actions/workflows/command.yml)
 [![Docs](https://github.com/tuist/Command/actions/workflows/docs.yml/badge.svg)](https://github.com/tuist/Command/actions/workflows/docs.yml)
 
+> [!IMPORTANT]
+> Command is deprecated, use [swift-subprocess](https://github.com/swiftlang/swift-subprocess) instead.
+
 Command is a micro Swift Package that provides utilities for running system processes. We extracted it from Tuist to make it available for other projects that might need to run system processes.
 
 ## Motivation
