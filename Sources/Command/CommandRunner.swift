@@ -150,15 +150,30 @@ public struct CommandRunner: CommandRunning, Sendable {
     /// hold can't exhaust the process's file-descriptor table.
     private let processLimiter: AsyncResourceLimiter
 
+    /// Test-only hook invoked synchronously with the stdout/stderr pipes immediately before the
+    /// subprocess is launched. Regression tests use it to assert that the pipe drainers are
+    /// already attached at that instant — the invariant that fixes tuist/tuist#12366.
+    private let preProcessRunHook: (@Sendable (Pipe, Pipe) -> Void)?
+
     public init(logger: Logger? = nil) {
         self.logger = logger
         processLimiter = Self.sharedProcessLimiter
+        preProcessRunHook = nil
     }
 
     /// Creates a runner with a custom cap on concurrently-running subprocesses.
     init(logger: Logger? = nil, maximumConcurrentProcesses: Int) {
         self.logger = logger
         processLimiter = AsyncResourceLimiter(limit: maximumConcurrentProcesses)
+        preProcessRunHook = nil
+    }
+
+    /// Creates a runner that reports the state of its pipe drainers to the given hook right
+    /// before the subprocess starts. For tests only.
+    init(logger: Logger? = nil, preProcessRunHook: @escaping @Sendable (Pipe, Pipe) -> Void) {
+        self.logger = logger
+        processLimiter = Self.sharedProcessLimiter
+        self.preProcessRunHook = preProcessRunHook
     }
 
     /// File descriptors kept in reserve for stdio and other process-wide handles.
@@ -228,30 +243,43 @@ public struct CommandRunner: CommandRunning, Sendable {
                         let stdoutPipe = Pipe()
                         let stderrPipe = Pipe()
 
-                        let stdoutTask = Task {
-                            do {
-                                for try await data in stdoutPipe.fileHandleForReading.byteStream() {
-                                    continuation.yield(.standardOutput([UInt8](data)))
-                                    if let output = String(data: data, encoding: .utf8) {
-                                        logger?.debug("\(output)", metadata: loggerMetadata)
-                                    }
-                                }
-                            } catch {
-                                logger?.error("Error reading stdout: \(error)", metadata: loggerMetadata)
+                        // Drain the child's stdout/stderr pipes via Foundation's
+                        // `readabilityHandler`, which is dispatched from a private GCD queue owned
+                        // by `NSFileHandle` — independent of Swift's cooperative pool. The pool
+                        // can be starved (a 3-vCPU CI VM running `tuist install`), a synchronous
+                        // block in a peer task, or a spike of concurrent work; none of that stops
+                        // the pipes from draining. The previous shape scheduled the drain from
+                        // inside an unstructured `Task {}` that competed for the same cooperative
+                        // pool the parent was saturating, which on low-core CI VMs deterministically
+                        // starved the reader before it could install its handler — the child then
+                        // filled the pipe (~16–64 KiB on macOS) and blocked forever on `write`,
+                        // and its `terminationHandler` never fired. See tuist/tuist#12366.
+                        let stdoutDone = DispatchSemaphore(value: 0)
+                        stdoutPipe.fileHandleForReading.readabilityHandler = { handle in
+                            let data = handle.availableData
+                            if data.isEmpty {
+                                handle.readabilityHandler = nil
+                                stdoutDone.signal()
+                                return
+                            }
+                            continuation.yield(.standardOutput([UInt8](data)))
+                            if let output = String(data: data, encoding: .utf8) {
+                                logger?.debug("\(output)", metadata: loggerMetadata)
                             }
                         }
 
-                        let stderrTask = Task {
-                            do {
-                                for try await data in stderrPipe.fileHandleForReading.byteStream() {
-                                    continuation.yield(.standardError([UInt8](data)))
-                                    if let output = String(data: data, encoding: .utf8) {
-                                        collectedStdErr.mutate { $0.append(output) }
-                                        logger?.error("\(output)", metadata: loggerMetadata)
-                                    }
-                                }
-                            } catch {
-                                logger?.error("Error reading stderr: \(error)", metadata: loggerMetadata)
+                        let stderrDone = DispatchSemaphore(value: 0)
+                        stderrPipe.fileHandleForReading.readabilityHandler = { handle in
+                            let data = handle.availableData
+                            if data.isEmpty {
+                                handle.readabilityHandler = nil
+                                stderrDone.signal()
+                                return
+                            }
+                            continuation.yield(.standardError([UInt8](data)))
+                            if let output = String(data: data, encoding: .utf8) {
+                                collectedStdErr.mutate { $0.append(output) }
+                                logger?.error("\(output)", metadata: loggerMetadata)
                             }
                         }
 
@@ -280,6 +308,7 @@ public struct CommandRunner: CommandRunning, Sendable {
                                 processCompletion.resume()
                             }
                             do {
+                                preProcessRunHook?(stdoutPipe, stderrPipe)
                                 try process.run()
                                 // Close the race where the stream is cancelled after the process is
                                 // published but before it started running.
@@ -292,8 +321,20 @@ public struct CommandRunner: CommandRunning, Sendable {
                             }
                         }
 
-                        await stdoutTask.value
-                        await stderrTask.value
+                        // Wait for the drainers to observe EOF on both pipes before closing the
+                        // read ends. Done from a dedicated `Thread` — not from any dispatch queue
+                        // or Swift cooperative-pool task — so the wait cannot be starved by other
+                        // Swift concurrency work running in the same process (the exact shape of
+                        // congestion that the bug this fix targets emerges under).
+                        await withCheckedContinuation { (drainCompletion: CheckedContinuation<Void, Never>) in
+                            let drainThread = Thread {
+                                stdoutDone.wait()
+                                stderrDone.wait()
+                                drainCompletion.resume()
+                            }
+                            drainThread.name = "CommandRunner.pipeDrainWait"
+                            drainThread.start()
+                        }
 
                         try? stdoutPipe.fileHandleForReading.close()
                         try? stderrPipe.fileHandleForReading.close()
