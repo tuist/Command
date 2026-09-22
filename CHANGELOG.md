@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.14] - 2026-09-22
+### Details
+#### Bug Fixes
+- Install pipe drainers synchronously so tuist install stops hanging on 3-vCPU CI VMs by @pepicrft in [#313](https://github.com/tuist/command/pull/313)
+
 ## [0.14.13] - 2026-09-07
 ### Details
 #### Chore
@@ -192,6 +197,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Details
 ## New Contributors
 * @pepicrft made their first contribution
+[0.14.14]: https://github.com/tuist/command/compare/0.14.13..0.14.14
 [0.14.13]: https://github.com/tuist/command/compare/0.14.12..0.14.13
 [0.14.12]: https://github.com/tuist/command/compare/0.14.11..0.14.12
 [0.14.11]: https://github.com/tuist/command/compare/0.14.10..0.14.11
