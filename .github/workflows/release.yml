@@ -79,7 +79,7 @@ jobs:
           git cliff --latest >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         if: env.should-release == 'true'
         with:
           draft: false
